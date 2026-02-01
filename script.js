@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then((docRef) => {
                         console.log("Document written with ID: ", docRef.id);
                         alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
-                        window.location.href = window.location.href; // Reload
+                        window.location.reload();
                     })
                     .catch((error) => {
                         console.error("Error adding document: ", error);
@@ -1010,3 +1010,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 });
+
+// --- ADMIN DASHBOARD MISSING HELPERS ---
+// These functions are called by the Admin Dashboard navigation but were missing.
+// We alias them to the main loader which handles all data rendering.
+window.loadMembers = function () { if (window.loadDashboardData) window.loadDashboardData(); };
+window.loadOfficers = function () { if (window.loadDashboardData) window.loadDashboardData(); };
+window.loadIssues = function () { if (window.loadDashboardData) window.loadDashboardData(); };
+
