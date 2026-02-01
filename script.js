@@ -267,9 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
             photoInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
-                    // Basic size check (1MB)
-                    if (file.size > 1024 * 1024) {
-                        alert("फोटो का साइज 1MB से कम होना चाहिए।");
+                    // Strict size check (500KB) to ensure it fits in Firestore (1MB limit for doc)
+                    // Base64 adds ~33% overhead. 500KB -> ~666KB. Leaves ~300KB for other data.
+                    if (file.size > 500 * 1024) {
+                        alert("फोटो का साइज 500KB से कम होना चाहिए।\n(Image must be less than 500KB)");
                         this.value = "";
                         photoPreview.style.display = "none";
                         photoPlaceholder.style.display = "block";
@@ -301,8 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sigInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
-                    if (file.size > 512 * 1024) { // 500KB limit for signature
-                        alert("हस्ताक्षर का साइज 500KB से कम होना चाहिए।");
+                    if (file.size > 200 * 1024) { // 200KB limit for signature
+                        alert("हस्ताक्षर का साइज 200KB से कम होना चाहिए।\n(Signature must be less than 200KB)");
                         this.value = "";
                         sigPreview.style.display = 'none';
                         sigPlaceholder.style.display = 'block';
@@ -498,327 +499,342 @@ document.addEventListener('DOMContentLoaded', () => {
                     const originalBtnText = submitBtn ? submitBtn.innerText : 'Submit';
                     if (submitBtn) {
                         submitBtn.innerText = "Processing...";
-                        submitBtn.disabled = true;
-                    }
+                        // CHECK TOTAL SIZE
+                        const jsonString = JSON.stringify(memberData);
+                        const sizeInBytes = new TextEncoder().encode(jsonString).length;
+                        const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+                        console.log(`Payload Size: ${sizeInMB} MB`);
 
-                    // Save to Firestore 'members' collection
-                    // Ensure db is defined
-                    if (!window.db) {
-                        throw new Error("Database connection not established. Please refresh the page.");
-                    }
-
-                    await window.db.collection("members").add(memberData);
-
-                    console.log("Document written successfully");
-                    alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
-                    window.location.reload();
-
-                } else {
-                    alert('कृपया सभी आवश्यक जानकारी भरें।');
-                }
-            } catch (err) {
-                console.error("Registration Error: ", err);
-                alert("Error during registration: " + err.message);
-                const submitBtn = regForm.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.innerText = "रजिस्टर करें";
-                    submitBtn.disabled = false;
-                }
-            }
-        });
-    }
-
-    // --- MEMBER AUTHENTICATION LOGIC --- //
-
-    // 1. Handle Member Login (login.html)
-    const memberForm = document.getElementById('memberLoginForm');
-    if (memberForm) {
-        memberForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const mobile = document.getElementById('memberMobile').value.trim();
-            const pass = document.getElementById('memberPass').value.trim();
-
-            if (mobile && pass) {
-                const loginBtn = memberForm.querySelector('button');
-                if (loginBtn) loginBtn.innerText = "Checking...";
-
-                // Query Firestore for member with matching mobile
-                db.collection("members").where("mobile", "==", mobile).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
-                            alert('मोबाइल नंबर पंजीकृत नहीं है ');
-                            if (loginBtn) loginBtn.innerText = "Login";
+                        if (sizeInBytes > 950000) { // Safety buffer for Firestore 1MB limit
+                            alert(`Error: Data too large (${sizeInMB} MB). Please use smaller photos.\nMax allowed is ~0.9 MB.`);
+                            if (submitBtn) {
+                                submitBtn.innerText = "रजिस्टर करें";
+                                submitBtn.disabled = false;
+                            }
                             return;
                         }
 
-                        let found = false;
-                        querySnapshot.forEach((doc) => {
-                            const member = doc.data();
-                            // Check password (in real app, use hashing!)
-                            if (member.password === pass) {
-                                found = true;
-                                // Save minimal session info to LocalStorage (ok for session state)
-                                // But we load actual data from DB on dashboard
-                                localStorage.setItem('up_sangh_current_member', JSON.stringify(member)); // Keep this for session mgmt for now
-                                localStorage.setItem('up_sangh_member_doc_id', doc.id); // Save Doc ID for updates
-
-                                alert('लॉगिन सफल (Login Successful)!');
-                                window.location.replace('member_dashboard.html');
-                            }
-                        });
-
-                        if (!found) {
-                            alert('पासवर्ड गलत है (Invalid Password)');
-                            if (loginBtn) loginBtn.innerText = "Login";
+                        // Save to Firestore 'members' collection
+                        // Ensure db is defined
+                        if (!window.db) {
+                            throw new Error("Database connection not established. Please refresh the page.");
                         }
-                    })
-                    .catch((error) => {
-                        console.log("Error getting documents: ", error);
-                        alert("Login Error: " + error.message);
+
+                        await window.db.collection("members").add(memberData);
+
+                        console.log("Document written successfully");
+                        alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
+                        window.location.reload();
+                    } else {
+                        alert('कृपया सभी आवश्यक जानकारी भरें।');
+                    }
+                } // Closing if(submitBtn)
+            } else {
+                alert('कृपया सभी आवश्यक जानकारी भरें।');
+            }
+        } catch (err) {
+            console.error("Registration Error: ", err);
+            alert("Error during registration: " + err.message);
+            const submitBtn = regForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerText = "रजिस्टर करें";
+                submitBtn.disabled = false;
+            }
+        }
+    });
+    }
+
+// --- MEMBER AUTHENTICATION LOGIC --- //
+
+// 1. Handle Member Login (login.html)
+const memberForm = document.getElementById('memberLoginForm');
+if (memberForm) {
+    memberForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const mobile = document.getElementById('memberMobile').value.trim();
+        const pass = document.getElementById('memberPass').value.trim();
+
+        if (mobile && pass) {
+            const loginBtn = memberForm.querySelector('button');
+            if (loginBtn) loginBtn.innerText = "Checking...";
+
+            // Query Firestore for member with matching mobile
+            db.collection("members").where("mobile", "==", mobile).get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        alert('मोबाइल नंबर पंजीकृत नहीं है ');
                         if (loginBtn) loginBtn.innerText = "Login";
+                        return;
+                    }
+
+                    let found = false;
+                    querySnapshot.forEach((doc) => {
+                        const member = doc.data();
+                        // Check password (in real app, use hashing!)
+                        if (member.password === pass) {
+                            found = true;
+                            // Save minimal session info to LocalStorage (ok for session state)
+                            // But we load actual data from DB on dashboard
+                            localStorage.setItem('up_sangh_current_member', JSON.stringify(member)); // Keep this for session mgmt for now
+                            localStorage.setItem('up_sangh_member_doc_id', doc.id); // Save Doc ID for updates
+
+                            alert('लॉगिन सफल (Login Successful)!');
+                            window.location.replace('member_dashboard.html');
+                        }
                     });
+
+                    if (!found) {
+                        alert('पासवर्ड गलत है (Invalid Password)');
+                        if (loginBtn) loginBtn.innerText = "Login";
+                    }
+                })
+                .catch((error) => {
+                    console.log("Error getting documents: ", error);
+                    alert("Login Error: " + error.message);
+                    if (loginBtn) loginBtn.innerText = "Login";
+                });
+        }
+    });
+
+    // Member Password Toggle
+    const mToggleBtn = document.getElementById('toggleMemberPass');
+    const mShowBox = document.getElementById('showMemberPassCheck');
+    const mPassIn = document.getElementById('memberPass');
+
+    if (mPassIn && (mToggleBtn || mShowBox)) {
+        const updateUI = (isText) => {
+            mPassIn.type = isText ? 'text' : 'password';
+            if (mToggleBtn) mToggleBtn.className = isText ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+            if (mShowBox) mShowBox.checked = isText;
+        };
+
+        if (mToggleBtn) mToggleBtn.addEventListener('click', () => updateUI(mPassIn.type === 'password'));
+        if (mShowBox) mShowBox.addEventListener('change', (e) => updateUI(e.target.checked));
+    }
+}
+
+// 2. Protect Member Dashboard
+if (window.location.pathname.includes('member_dashboard.html')) {
+    const currentMember = localStorage.getItem('up_sangh_current_member');
+    if (!currentMember) {
+        window.location.replace('login.html');
+    } else {
+        window.logoutMember = function () {
+            if (confirm('लॉगआउट करना चाहते हैं?')) {
+                localStorage.removeItem('up_sangh_current_member');
+                localStorage.removeItem('up_sangh_active_section');
+                window.location.replace('login.html');
             }
-        });
-
-        // Member Password Toggle
-        const mToggleBtn = document.getElementById('toggleMemberPass');
-        const mShowBox = document.getElementById('showMemberPassCheck');
-        const mPassIn = document.getElementById('memberPass');
-
-        if (mPassIn && (mToggleBtn || mShowBox)) {
-            const updateUI = (isText) => {
-                mPassIn.type = isText ? 'text' : 'password';
-                if (mToggleBtn) mToggleBtn.className = isText ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-                if (mShowBox) mShowBox.checked = isText;
-            };
-
-            if (mToggleBtn) mToggleBtn.addEventListener('click', () => updateUI(mPassIn.type === 'password'));
-            if (mShowBox) mShowBox.addEventListener('change', (e) => updateUI(e.target.checked));
         }
     }
+}
 
-    // 2. Protect Member Dashboard
-    if (window.location.pathname.includes('member_dashboard.html')) {
-        const currentMember = localStorage.getItem('up_sangh_current_member');
-        if (!currentMember) {
-            window.location.replace('login.html');
-        } else {
-            window.logoutMember = function () {
-                if (confirm('लॉगआउट करना चाहते हैं?')) {
-                    localStorage.removeItem('up_sangh_current_member');
-                    localStorage.removeItem('up_sangh_active_section');
-                    window.location.replace('login.html');
-                }
-            }
-        }
-    }
+// --- ADMIN AUTHENTICATION LOGIC (ROBUST) --- //
 
-    // --- ADMIN AUTHENTICATION LOGIC (ROBUST) --- //
+// Login Configuration
+const AUTH_KEY = 'up_sangh_admin_token';
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "Sangh@2025";
 
-    // Login Configuration
-    const AUTH_KEY = 'up_sangh_admin_token';
-    const ADMIN_USER = "admin";
-    const ADMIN_PASS = "Sangh@2025";
+// 1. Handle Login Page (login.html or admin_login.html fallback)
+const adminForm = document.getElementById('mainAdminLoginForm') || document.getElementById('loginForm');
 
-    // 1. Handle Login Page (login.html or admin_login.html fallback)
-    const adminForm = document.getElementById('mainAdminLoginForm') || document.getElementById('loginForm');
+if (adminForm) {
+    // Auto-clear session on load if we are on login page
+    // But since login.html also has Member login, we should only clear if explicitly asked or maybe not enforce clear?
+    // User asked for "Admin Login inside Login Page". 
+    // Let's clear token to fail-safe.
+    // localStorage.removeItem(AUTH_KEY); // Actually, don't auto-clear heavily on shared page, but for admin safety let's do it if they try to login.
 
-    if (adminForm) {
-        // Auto-clear session on load if we are on login page
-        // But since login.html also has Member login, we should only clear if explicitly asked or maybe not enforce clear?
-        // User asked for "Admin Login inside Login Page". 
-        // Let's clear token to fail-safe.
-        // localStorage.removeItem(AUTH_KEY); // Actually, don't auto-clear heavily on shared page, but for admin safety let's do it if they try to login.
-
-        adminForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            // Detect which inputs are being used (login.html vs admin_login.html)
-            const userIn = document.getElementById('adminUser') || document.getElementById('username');
-            const passIn = document.getElementById('adminPass') || document.getElementById('password');
-
-            const user = userIn.value.trim();
-            const pass = passIn.value.trim();
-
-            const btn = adminForm.querySelector('button');
-
-            // 1. Check ADMIN
-            if (user === ADMIN_USER && pass === ADMIN_PASS) {
-                // Set persistent token
-                localStorage.setItem(AUTH_KEY, Date.now().toString());
-                // Clear any previous officer session to ensure Super Admin sees everything
-                localStorage.removeItem('up_sangh_current_officer_session');
-                localStorage.removeItem('up_sangh_officer_token');
-
-                if (btn) btn.innerText = "Admin Login...";
-                setTimeout(() => window.location.replace('admin_dashboard.html'), 500);
-            }
-            // 2. Check OFFICERS (Firestore)
-            else {
-                if (btn) btn.innerText = "Verifying...";
-
-                db.collection("officers").where("mobile", "==", user).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
-                            alert('गलत यूज़रनेम या पासवर्ड (Invalid Credentials)');
-                            if (btn) btn.innerText = "Login";
-                            return;
-                        }
-
-                        let found = false;
-                        querySnapshot.forEach((doc) => {
-                            const officer = doc.data();
-                            officer.firestoreId = doc.id; // Save ID
-
-                            if (officer.password === pass) {
-                                found = true;
-
-                                // Check Approval Status
-                                if (officer.status && officer.status !== 'Approved') {
-                                    alert(`आपका अकाउंट अभी सत्यापित (Verify) नहीं हुआ है। कृपया मुख्य एडमिन से संपर्क करें।\nStatus: ${officer.status}`);
-                                    if (btn) btn.innerText = "Login";
-                                    return;
-                                }
-
-                                // Officer Login Success
-                                localStorage.setItem('up_sangh_officer_token', Date.now().toString());
-                                localStorage.setItem('up_sangh_current_officer_session', JSON.stringify(officer));
-
-                                if (btn) btn.innerText = "Redirecting...";
-
-                                setTimeout(() => {
-                                    window.location.replace('officer_dashboard.html');
-                                }, 500);
-                            }
-                        });
-
-                        if (!found) {
-                            alert('गलत यूज़रनेम या पासवर्ड (Invalid Credentials)');
-                            if (btn) btn.innerText = "Login";
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Login Error", error);
-                        alert("Login error: " + error.message);
-                        if (btn) btn.innerText = "Login";
-                    });
-            }
-        });
-
-        // Password Toggle Logic
-        const toggleBtn = document.getElementById('toggleAdminPass') || document.getElementById('togglePassword');
-        const showBox = document.getElementById('showAdminPassCheck') || document.getElementById('showPassCheckbox');
+    adminForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Detect which inputs are being used (login.html vs admin_login.html)
+        const userIn = document.getElementById('adminUser') || document.getElementById('username');
         const passIn = document.getElementById('adminPass') || document.getElementById('password');
 
-        if (passIn && (toggleBtn || showBox)) {
-            const updateUI = (isText) => {
-                passIn.type = isText ? 'text' : 'password';
-                if (toggleBtn) toggleBtn.className = isText ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-                if (showBox) showBox.checked = isText;
-            };
+        const user = userIn.value.trim();
+        const pass = passIn.value.trim();
 
-            if (toggleBtn) toggleBtn.addEventListener('click', () => updateUI(passIn.type === 'password'));
-            if (showBox) showBox.addEventListener('change', (e) => updateUI(e.target.checked));
-        }
-    }
+        const btn = adminForm.querySelector('button');
 
-    // 2. Protect Admin Dashboard
-    if (window.location.pathname.includes('admin_dashboard.html')) {
-        const token = localStorage.getItem(AUTH_KEY);
-        if (!token) {
-            // Not logged in
-            document.body.style.display = 'none'; // Hide content immediately
-            window.location.replace('login.html'); // Redirect to main login page now
-        } else {
-            // Logged in
-            window.logoutAdmin = function () {
-                if (confirm('क्या आप लॉगआउट करना चाहते हैं?')) {
-                    localStorage.removeItem(AUTH_KEY);
-                    window.location.replace('login.html');
-                }
-            };
-        }
-    }
-
-    // 3. Logout Functionality (Global)
-    window.logoutAdmin = function () {
-        if (confirm('क्या आप लॉगआउट करना चाहते हैं?')) {
-            localStorage.removeItem('up_sangh_admin_token');
+        // 1. Check ADMIN
+        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+            // Set persistent token
+            localStorage.setItem(AUTH_KEY, Date.now().toString());
+            // Clear any previous officer session to ensure Super Admin sees everything
             localStorage.removeItem('up_sangh_current_officer_session');
             localStorage.removeItem('up_sangh_officer_token');
-            localStorage.removeItem('up_sangh_active_section_admin');
-            localStorage.removeItem('up_sangh_active_section_officer');
-            sessionStorage.removeItem('admin_logged_in');
-            window.location.replace('login.html');
+
+            if (btn) btn.innerText = "Admin Login...";
+            setTimeout(() => window.location.replace('admin_dashboard.html'), 500);
         }
-    };
+        // 2. Check OFFICERS (Firestore)
+        else {
+            if (btn) btn.innerText = "Verifying...";
 
-    // Helper to safely parse JSON
-    window.safeJsonParse = function (key) {
-        try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : [];
-        } catch (e) {
-            console.error("Data parse error", e);
-            return [];
+            db.collection("officers").where("mobile", "==", user).get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        alert('गलत यूज़रनेम या पासवर्ड (Invalid Credentials)');
+                        if (btn) btn.innerText = "Login";
+                        return;
+                    }
+
+                    let found = false;
+                    querySnapshot.forEach((doc) => {
+                        const officer = doc.data();
+                        officer.firestoreId = doc.id; // Save ID
+
+                        if (officer.password === pass) {
+                            found = true;
+
+                            // Check Approval Status
+                            if (officer.status && officer.status !== 'Approved') {
+                                alert(`आपका अकाउंट अभी सत्यापित (Verify) नहीं हुआ है। कृपया मुख्य एडमिन से संपर्क करें।\nStatus: ${officer.status}`);
+                                if (btn) btn.innerText = "Login";
+                                return;
+                            }
+
+                            // Officer Login Success
+                            localStorage.setItem('up_sangh_officer_token', Date.now().toString());
+                            localStorage.setItem('up_sangh_current_officer_session', JSON.stringify(officer));
+
+                            if (btn) btn.innerText = "Redirecting...";
+
+                            setTimeout(() => {
+                                window.location.replace('officer_dashboard.html');
+                            }, 500);
+                        }
+                    });
+
+                    if (!found) {
+                        alert('गलत यूज़रनेम या पासवर्ड (Invalid Credentials)');
+                        if (btn) btn.innerText = "Login";
+                    }
+                })
+                .catch((error) => {
+                    console.error("Login Error", error);
+                    alert("Login error: " + error.message);
+                    if (btn) btn.innerText = "Login";
+                });
         }
-    };
+    });
 
-    // Handle Issue Form
-    const issueForm = document.getElementById('issueForm');
-    if (issueForm) {
-        issueForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+    // Password Toggle Logic
+    const toggleBtn = document.getElementById('toggleAdminPass') || document.getElementById('togglePassword');
+    const showBox = document.getElementById('showAdminPassCheck') || document.getElementById('showPassCheckbox');
+    const passIn = document.getElementById('adminPass') || document.getElementById('password');
 
-            // Collect Data
-            const name = document.getElementById('name') ? document.getElementById('name').value : 'Anonymous';
-            const mobile = document.getElementById('mobile') ? document.getElementById('mobile').value : '';
-            const subject = document.getElementById('subject') ? document.getElementById('subject').value : 'General Issue';
-            const message = document.getElementById('message').value;
+    if (passIn && (toggleBtn || showBox)) {
+        const updateUI = (isText) => {
+            passIn.type = isText ? 'text' : 'password';
+            if (toggleBtn) toggleBtn.className = isText ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+            if (showBox) showBox.checked = isText;
+        };
 
-            if (message) {
-                const newIssue = {
-                    id: Date.now(),
-                    name,
-                    mobile,
-                    subject,
-                    message,
-                    date: new Date().toLocaleDateString('hi-IN')
-                };
-
-                // Save to LocalStorage
-                // Use the safe helper if available, else manual try-catch
-                let issues = [];
-                try {
-                    issues = JSON.parse(localStorage.getItem('up_sangh_issues')) || [];
-                } catch (e) { issues = []; }
-
-                issues.push(newIssue);
-                localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
-
-                alert('आपकी समस्या दर्ज कर ली गई है। धन्यवाद। (Issue Submitted)');
-                issueForm.reset();
-            } else {
-                alert('कृपया विवरण लिखें।');
-            }
-        });
+        if (toggleBtn) toggleBtn.addEventListener('click', () => updateUI(passIn.type === 'password'));
+        if (showBox) showBox.addEventListener('change', (e) => updateUI(e.target.checked));
     }
+}
 
-    // --- PUBLIC PAGE: RENDER OFFICERS (members.html) --- //
-    const officerGrid = document.querySelector('.cards-grid'); // Ensure this class exists in members.html
-    if (officerGrid && window.location.pathname.includes('members.html')) {
-        // Load officers from Admin Storage
-        const allOfficers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
-        const officers = allOfficers.filter(o => (o.status || 'Approved') === 'Approved');
+// 2. Protect Admin Dashboard
+if (window.location.pathname.includes('admin_dashboard.html')) {
+    const token = localStorage.getItem(AUTH_KEY);
+    if (!token) {
+        // Not logged in
+        document.body.style.display = 'none'; // Hide content immediately
+        window.location.replace('login.html'); // Redirect to main login page now
+    } else {
+        // Logged in
+        window.logoutAdmin = function () {
+            if (confirm('क्या आप लॉगआउट करना चाहते हैं?')) {
+                localStorage.removeItem(AUTH_KEY);
+                window.location.replace('login.html');
+            }
+        };
+    }
+}
 
-        // If empty, maybe show default or placeholder?
-        // keeping existing static HTML if no dynamic data? 
-        // Actually user wants control, so we should overwrite if data exists (or just append)
-        // Let's overwite for full control
+// 3. Logout Functionality (Global)
+window.logoutAdmin = function () {
+    if (confirm('क्या आप लॉगआउट करना चाहते हैं?')) {
+        localStorage.removeItem('up_sangh_admin_token');
+        localStorage.removeItem('up_sangh_current_officer_session');
+        localStorage.removeItem('up_sangh_officer_token');
+        localStorage.removeItem('up_sangh_active_section_admin');
+        localStorage.removeItem('up_sangh_active_section_officer');
+        sessionStorage.removeItem('admin_logged_in');
+        window.location.replace('login.html');
+    }
+};
 
-        if (officers.length > 0) {
-            officerGrid.innerHTML = ''; // Clear static defaults
-            officers.forEach(off => {
-                officerGrid.innerHTML += `
+// Helper to safely parse JSON
+window.safeJsonParse = function (key) {
+    try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        console.error("Data parse error", e);
+        return [];
+    }
+};
+
+// Handle Issue Form
+const issueForm = document.getElementById('issueForm');
+if (issueForm) {
+    issueForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Collect Data
+        const name = document.getElementById('name') ? document.getElementById('name').value : 'Anonymous';
+        const mobile = document.getElementById('mobile') ? document.getElementById('mobile').value : '';
+        const subject = document.getElementById('subject') ? document.getElementById('subject').value : 'General Issue';
+        const message = document.getElementById('message').value;
+
+        if (message) {
+            const newIssue = {
+                id: Date.now(),
+                name,
+                mobile,
+                subject,
+                message,
+                date: new Date().toLocaleDateString('hi-IN')
+            };
+
+            // Save to LocalStorage
+            // Use the safe helper if available, else manual try-catch
+            let issues = [];
+            try {
+                issues = JSON.parse(localStorage.getItem('up_sangh_issues')) || [];
+            } catch (e) { issues = []; }
+
+            issues.push(newIssue);
+            localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
+
+            alert('आपकी समस्या दर्ज कर ली गई है। धन्यवाद। (Issue Submitted)');
+            issueForm.reset();
+        } else {
+            alert('कृपया विवरण लिखें।');
+        }
+    });
+}
+
+// --- PUBLIC PAGE: RENDER OFFICERS (members.html) --- //
+const officerGrid = document.querySelector('.cards-grid'); // Ensure this class exists in members.html
+if (officerGrid && window.location.pathname.includes('members.html')) {
+    // Load officers from Admin Storage
+    const allOfficers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+    const officers = allOfficers.filter(o => (o.status || 'Approved') === 'Approved');
+
+    // If empty, maybe show default or placeholder?
+    // keeping existing static HTML if no dynamic data? 
+    // Actually user wants control, so we should overwrite if data exists (or just append)
+    // Let's overwite for full control
+
+    if (officers.length > 0) {
+        officerGrid.innerHTML = ''; // Clear static defaults
+        officers.forEach(off => {
+            officerGrid.innerHTML += `
                     <div class="profile-card">
                         <img src="https://via.placeholder.com/100" alt="Member" class="profile-img">
                         <h3>${off.name}</h3>
@@ -827,178 +843,178 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${off.mobile ? `<p><i class="fa-solid fa-phone"></i> ${off.mobile}</p>` : ''}
                     </div>
                 `;
-            });
-        }
+        });
     }
+}
 
-    // Dynamic Departments Loading (Simulation)
-    const deptContainer = document.querySelector('.dept-list');
-    if (deptContainer) {
-        const departments = [
-            { name: "बेसिक शिक्षा विभाग", type: "डाटा एंट्री / अनुदेशक" },
-            { name: "चिकित्सा एवं स्वास्थ्य विभाग", type: "वार्ड बॉय / नज़्स / अन्य" },
-            { name: "नगर निगम", type: "सफाई कर्मचारी / ड्राइवर" },
-            { name: "विद्युत विभाग", type: "लाइनमैन / मीटर रीडर" },
-            { name: "परिवहन निगम", type: "संविदा चालक / परिचालक" }
-        ];
+// Dynamic Departments Loading (Simulation)
+const deptContainer = document.querySelector('.dept-list');
+if (deptContainer) {
+    const departments = [
+        { name: "बेसिक शिक्षा विभाग", type: "डाटा एंट्री / अनुदेशक" },
+        { name: "चिकित्सा एवं स्वास्थ्य विभाग", type: "वार्ड बॉय / नज़्स / अन्य" },
+        { name: "नगर निगम", type: "सफाई कर्मचारी / ड्राइवर" },
+        { name: "विद्युत विभाग", type: "लाइनमैन / मीटर रीडर" },
+        { name: "परिवहन निगम", type: "संविदा चालक / परिचालक" }
+    ];
 
-        departments.forEach(dept => {
-            const div = document.createElement('div');
-            div.className = 'dept-item';
-            div.innerHTML = `
+    departments.forEach(dept => {
+        const div = document.createElement('div');
+        div.className = 'dept-item';
+        div.innerHTML = `
                 <h3><i class="fa-solid fa-building-user"></i> ${dept.name}</h3>
                 <p><strong>कार्यक्षेत्र:</strong> ${dept.type}</p>
                 <button class="btn-sm" style="margin-top:10px; padding:5px 10px; cursor:pointer;">नियम देखें</button>
             `;
-            deptContainer.appendChild(div);
-        });
-    }
+        deptContainer.appendChild(div);
+    });
+}
 
-    // Accordion for Issues
-    const acc = document.getElementsByClassName("accordion");
-    for (let i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function () {
-            this.classList.toggle("active");
-            var panel = this.nextElementSibling;
-            if (panel.style.maxHeight) {
-                panel.style.maxHeight = null;
-            } else {
-                panel.style.maxHeight = panel.scrollHeight + "px";
-            }
-        });
-    }
-    // --- EXPORT FUNCTIONALITY --- //
+// Accordion for Issues
+const acc = document.getElementsByClassName("accordion");
+for (let i = 0; i < acc.length; i++) {
+    acc[i].addEventListener("click", function () {
+        this.classList.toggle("active");
+        var panel = this.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    });
+}
+// --- EXPORT FUNCTIONALITY --- //
 
-    window.downloadMembersPDF = function () {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+window.downloadMembersPDF = function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-        const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+    const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
 
-        doc.setFont("helvetica", "bold");
-        doc.text("All Registered Members List", 14, 15);
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Total Members: ${members.length} | Date: ${new Date().toLocaleDateString()}`, 14, 22);
+    doc.setFont("helvetica", "bold");
+    doc.text("All Registered Members List", 14, 15);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Total Members: ${members.length} | Date: ${new Date().toLocaleDateString()}`, 14, 22);
 
-        const tableColumn = ["ID", "Name", "Mobile", "Father's Name", "District", "Dept", "Post"];
-        const tableRows = [];
+    const tableColumn = ["ID", "Name", "Mobile", "Father's Name", "District", "Dept", "Post"];
+    const tableRows = [];
 
-        members.forEach(m => {
-            const memberData = [
-                m.id || '-',
-                m.name || '-',
-                m.mobile || '-',
-                m.fatherName || '-',
-                m.homeDistrict || '-',
-                m.department || '-',
-                m.post || '-'
-            ];
-            tableRows.push(memberData);
-        });
+    members.forEach(m => {
+        const memberData = [
+            m.id || '-',
+            m.name || '-',
+            m.mobile || '-',
+            m.fatherName || '-',
+            m.homeDistrict || '-',
+            m.department || '-',
+            m.post || '-'
+        ];
+        tableRows.push(memberData);
+    });
 
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30,
-            theme: 'grid',
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [41, 128, 185] }
-        });
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 30,
+        theme: 'grid',
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [41, 128, 185] }
+    });
 
-        doc.save(`Members_List_${Date.now()}.pdf`);
-    };
+    doc.save(`Members_List_${Date.now()}.pdf`);
+};
 
-    window.downloadMembersExcel = function () {
-        const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-        if (members.length === 0) { alert("No members to export."); return; }
+window.downloadMembersExcel = function () {
+    const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+    if (members.length === 0) { alert("No members to export."); return; }
 
-        const worksheetData = members.map(m => ({
-            "User ID": m.id,
-            "Name": m.name,
-            "Father Name": m.fatherName,
-            "DOB": m.dob,
-            "Mobile": m.mobile,
-            "Home District": m.homeDistrict,
-            "Home Address": m.homeAddress,
-            "Work District": m.workDistrict,
-            "Work Address": m.workAddress,
-            "Department": m.department,
-            "Post": m.post,
-            "Status": m.status,
-            "Reg Date": m.date
-        }));
+    const worksheetData = members.map(m => ({
+        "User ID": m.id,
+        "Name": m.name,
+        "Father Name": m.fatherName,
+        "DOB": m.dob,
+        "Mobile": m.mobile,
+        "Home District": m.homeDistrict,
+        "Home Address": m.homeAddress,
+        "Work District": m.workDistrict,
+        "Work Address": m.workAddress,
+        "Department": m.department,
+        "Post": m.post,
+        "Status": m.status,
+        "Reg Date": m.date
+    }));
 
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(worksheetData);
-        XLSX.utils.book_append_sheet(wb, ws, "Members");
-        XLSX.writeFile(wb, `Members_List_${Date.now()}.xlsx`);
-    };
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Members");
+    XLSX.writeFile(wb, `Members_List_${Date.now()}.xlsx`);
+};
 
-    window.downloadOfficersPDF = function () {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l'); // Landscape for more columns
+window.downloadOfficersPDF = function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l'); // Landscape for more columns
 
-        const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+    const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
 
-        doc.setFont("helvetica", "bold");
-        doc.text("All Officers List", 14, 15);
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Total Officers: ${officers.length} | Date: ${new Date().toLocaleDateString()}`, 14, 22);
+    doc.setFont("helvetica", "bold");
+    doc.text("All Officers List", 14, 15);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Total Officers: ${officers.length} | Date: ${new Date().toLocaleDateString()}`, 14, 22);
 
-        const tableColumn = ["Name", "Father Name", "Mobile", "Post", "Department", "Role", "Division", "District"];
-        const tableRows = [];
+    const tableColumn = ["Name", "Father Name", "Mobile", "Post", "Department", "Role", "Division", "District"];
+    const tableRows = [];
 
-        officers.forEach(o => {
-            const officerData = [
-                o.name || '-',
-                o.fatherName || '-',
-                o.mobile || '-',
-                o.post || '-',
-                o.vibhag || '-',
-                o.role || '-',
-                o.division || '-',
-                o.district || '-'
-            ];
-            tableRows.push(officerData);
-        });
+    officers.forEach(o => {
+        const officerData = [
+            o.name || '-',
+            o.fatherName || '-',
+            o.mobile || '-',
+            o.post || '-',
+            o.vibhag || '-',
+            o.role || '-',
+            o.division || '-',
+            o.district || '-'
+        ];
+        tableRows.push(officerData);
+    });
 
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30,
-            theme: 'striped',
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [220, 53, 69] }
-        });
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 30,
+        theme: 'striped',
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [220, 53, 69] }
+    });
 
-        doc.save(`Officers_List_${Date.now()}.pdf`);
-    };
+    doc.save(`Officers_List_${Date.now()}.pdf`);
+};
 
-    window.downloadOfficersExcel = function () {
-        const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
-        if (officers.length === 0) { alert("No officers to export."); return; }
+window.downloadOfficersExcel = function () {
+    const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+    if (officers.length === 0) { alert("No officers to export."); return; }
 
-        const worksheetData = officers.map(o => ({
-            "Name": o.name,
-            "Father Name": o.fatherName,
-            "Mobile": o.mobile,
-            "Department": o.vibhag,
-            "Post": o.post,
-            "Role": o.role,
-            "Division": o.division,
-            "District": o.district,
-            "Block": o.block,
-            "Address": o.address,
-            "Status": o.status
-        }));
+    const worksheetData = officers.map(o => ({
+        "Name": o.name,
+        "Father Name": o.fatherName,
+        "Mobile": o.mobile,
+        "Department": o.vibhag,
+        "Post": o.post,
+        "Role": o.role,
+        "Division": o.division,
+        "District": o.district,
+        "Block": o.block,
+        "Address": o.address,
+        "Status": o.status
+    }));
 
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(worksheetData);
-        XLSX.utils.book_append_sheet(wb, ws, "Officers");
-        XLSX.writeFile(wb, `Officers_List_${Date.now()}.xlsx`);
-    };
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Officers");
+    XLSX.writeFile(wb, `Officers_List_${Date.now()}.xlsx`);
+};
 
 });
 
