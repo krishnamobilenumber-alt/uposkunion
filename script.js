@@ -438,101 +438,92 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        regForm.addEventListener('submit', (e) => {
+        regForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log("Submit button clicked");
 
-            // Get form inputs
-            const name = document.getElementById('name').value;
-            const fatherName = document.getElementById('fname').value;
-            const dob = document.getElementById('dob').value;
-            const mobile = document.getElementById('mobile').value;
-            const homeDistrict = document.getElementById('home_district').value;
-            const homeAddress = document.getElementById('home_address').value;
-            const workDistrict = document.getElementById('work_district').value;
-            const workAddress = document.getElementById('work_address').value;
-            const department = document.getElementById('department').value;
-            const post = document.getElementById('post').value;
-            const password = document.getElementById('regPassword').value;
-            const membershipPlan = document.getElementById('membership_plan').value;
-            const membershipAmount = membershipPlan === 'Lifetime' ? 699 : 299;
+            try {
+                // Get form inputs
+                const name = document.getElementById('name').value;
+                const fatherName = document.getElementById('fname').value;
+                const dob = document.getElementById('dob').value;
+                const mobile = document.getElementById('mobile').value;
+                const homeDistrict = document.getElementById('home_district').value;
+                const homeAddress = document.getElementById('home_address').value;
+                const workDistrict = document.getElementById('work_district').value;
+                const workAddress = document.getElementById('work_address').value;
+                const department = document.getElementById('department').value;
+                const post = document.getElementById('post').value;
+                const password = document.getElementById('regPassword').value;
+                const membershipPlan = document.getElementById('membership_plan') ? document.getElementById('membership_plan').value : 'Yearly'; // Default if missing
+                const membershipAmount = membershipPlan === 'Lifetime' ? 699 : 299;
 
-            // --- FIRESTORE INTEGRATION ---
-            // Validate (Basic check)
-            if (name && mobile && department && post && password) {
-                // Create Member Object
-                const memberData = {
-                    id: Date.now(), // timestamp as ID helper
-                    name: name,
-                    fatherName: fatherName,
-                    father_name: fatherName,
-                    dob: dob,
-                    mobile: mobile,
-                    password: password,
-                    homeDistrict: homeDistrict,
-                    home_district: homeDistrict,
-                    home_tahsil: document.getElementById('home_tahsil').value.trim(),
-                    home_block: document.getElementById('home_block').value.trim(),
-                    homeAddress: homeAddress,
-                    home_address: homeAddress,
-                    workDistrict: workDistrict,
-                    work_district: workDistrict,
-                    work_tahsil: document.getElementById('work_tahsil').value.trim(),
-                    work_block: document.getElementById('work_block').value.trim(),
-                    workAddress: workAddress,
-                    work_address: workAddress,
-                    department: department,
-                    post: post,
-                    photo: photoBase64,
-                    signature: sigBase64,
-                    status: 'Pending',
-                    membership_plan: membershipPlan,
-                    membership_amount: membershipAmount,
-                    date: new Date().toLocaleDateString('hi-IN'), // Display String
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp() // Server Timestamp for sorting
-                };
+                // --- FIRESTORE INTEGRATION ---
+                // Validate (Basic check)
+                if (name && mobile && department && post && password) {
+                    // Create Member Object
+                    const memberData = {
+                        id: Date.now(), // timestamp as ID helper
+                        name: name,
+                        fatherName: fatherName,
+                        father_name: fatherName,
+                        dob: dob,
+                        mobile: mobile,
+                        password: password,
+                        homeDistrict: homeDistrict,
+                        home_district: homeDistrict,
+                        home_tahsil: document.getElementById('home_tahsil') ? document.getElementById('home_tahsil').value.trim() : '',
+                        home_block: document.getElementById('home_block') ? document.getElementById('home_block').value.trim() : '',
+                        homeAddress: homeAddress,
+                        home_address: homeAddress,
+                        workDistrict: workDistrict,
+                        work_district: workDistrict,
+                        work_tahsil: document.getElementById('work_tahsil') ? document.getElementById('work_tahsil').value.trim() : '',
+                        work_block: document.getElementById('work_block') ? document.getElementById('work_block').value.trim() : '',
+                        workAddress: workAddress,
+                        work_address: workAddress,
+                        department: department,
+                        post: post,
+                        photo: photoBase64 || "",
+                        signature: sigBase64 || "",
+                        status: 'Pending',
+                        membership_plan: membershipPlan,
+                        membership_amount: membershipAmount,
+                        date: new Date().toLocaleDateString('hi-IN'), // Display String
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp() // Server Timestamp for sorting
+                    };
 
-                // Show loading state
+                    // Show loading state
+                    const submitBtn = regForm.querySelector('button[type="submit"]');
+                    const originalBtnText = submitBtn ? submitBtn.innerText : 'Submit';
+                    if (submitBtn) {
+                        submitBtn.innerText = "Processing...";
+                        submitBtn.disabled = true;
+                    }
+
+                    // Save to Firestore 'members' collection
+                    // Ensure db is defined
+                    if (!window.db) {
+                        throw new Error("Database connection not established. Please refresh the page.");
+                    }
+
+                    await window.db.collection("members").add(memberData);
+
+                    console.log("Document written successfully");
+                    alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
+                    window.location.reload();
+
+                } else {
+                    alert('कृपया सभी आवश्यक जानकारी भरें।');
+                }
+            } catch (err) {
+                console.error("Registration Error: ", err);
+                alert("Error during registration: " + err.message);
                 const submitBtn = regForm.querySelector('button[type="submit"]');
-                const originalBtnText = submitBtn ? submitBtn.innerText : 'Submit';
                 if (submitBtn) {
-                    submitBtn.innerText = "Processing...";
-                    submitBtn.disabled = true;
+                    submitBtn.innerText = "रजिस्टर करें";
+                    submitBtn.disabled = false;
                 }
-
-                // Save to Firestore 'members' collection
-                db.collection("members").add(memberData)
-                    .then((docRef) => {
-                        console.log("Document written with ID: ", docRef.id);
-                        alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
-                        window.location.reload();
-                    })
-                    .catch((error) => {
-                        console.error("Error adding document: ", error);
-                        alert("Error saving data: " + error.message);
-                        if (submitBtn) {
-                            submitBtn.innerText = originalBtnText;
-                            submitBtn.disabled = false;
-                        }
-                    });
-
-
-                // Reset address visibility logic
-                if (homeAddressGroup) {
-                    homeAddressGroup.style.display = 'none';
-                    const ta = homeAddressGroup.querySelector('textarea');
-                    if (ta) ta.disabled = true;
-                }
-                if (workAddressGroup) {
-                    workAddressGroup.style.display = 'none';
-                    const ta = workAddressGroup.querySelector('textarea');
-                    if (ta) ta.disabled = true;
-                }
-                // Reset photo preview
-                if (photoPreview) photoPreview.style.display = 'none';
-                if (photoPlaceholder) photoPlaceholder.style.display = 'block';
-                photoBase64 = "";
-            } else {
-                alert('कृपया सभी आवश्यक जानकारी भरें।');
             }
         });
     }
