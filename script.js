@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle Registration Form
     // DIAGNOSTIC ALERT - REMOVE AFTER FIX
-    // alert("System Updated to v3.2 - New Code Loaded"); 
+    alert("System Online: Registration Script 3.5 Loaded");
 
     const regForm = document.getElementById('registrationForm');
     // Global State for Photos
