@@ -520,11 +520,34 @@ document.addEventListener('DOMContentLoaded', () => {
                             throw new Error("Database connection not established. Please refresh the page.");
                         }
 
-                        await window.db.collection("members").add(memberData);
+                        // Race Condition: Timeout if Firestore takes too long (e.g., bad network)
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error("Connection Timeout: Server is not responding. Check your internet.")), 15000)
+                        );
+
+                        await Promise.race([
+                            window.db.collection("members").add(memberData),
+                            timeoutPromise
+                        ]);
 
                         console.log("Document written successfully");
-                        alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
-                        window.location.reload();
+
+                        // Use Custom Modal
+                        const modal = document.getElementById('successModal');
+                        if (modal) {
+                            const msg = document.getElementById('modalMessage');
+                            if (msg) msg.innerText = `बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n(Registration Successful)`;
+                            modal.classList.add('active'); // CSS class for visibility if 'active' is used
+                            modal.style.display = 'flex'; // Inline override just in case
+                        } else {
+                            alert(`Registration Successful!`);
+                        }
+
+                        // Cleanup after 3 seconds
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 3000);
+
                     } else {
                         alert('कृपया सभी आवश्यक जानकारी भरें।');
                     }
