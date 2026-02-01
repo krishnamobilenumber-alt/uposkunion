@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>जन शक्ति मीडिया - उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --media-red: #ff0000;
+            --media-dark: #1a1a1a;
+            --media-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        .media-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('hero_bg.jpg') center/cover;
+            padding: 100px 0;
+            color: #fff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .media-banner {
+            display: inline-block;
+            background: var(--media-red);
+            padding: 5px 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            animation: pulse-live 2s infinite;
+        }
+
+        @keyframes pulse-live {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .media-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .media-container {
+            max-width: 1200px;
+            margin: -50px auto 50px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .featured-media {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .video-player {
+            background: #000;
+            aspect-ratio: 16/9;
+            width: 100%;
+        }
+
+        .video-player iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-sidebar {
+            padding: 30px;
+            background: #fdfdfd;
+            border-left: 1px solid #eee;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--media-red);
+            padding-bottom: 10px;
+        }
+
+        .video-list-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .video-list-item:hover {
+            transform: translateX(5px);
+        }
+
+        .video-thumb {
+            width: 80px;
+            height: 50px;
+            background: #ddd;
+            border-radius: 5px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .video-info h4 {
+            font-size: 0.9rem;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .news-card-media {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: 0.3s;
+        }
+
+        .news-card-media:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-img-wrapper {
+            height: 200px;
+            background: #eee;
+            position: relative;
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--media-red);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-body-media {
+            padding: 20px;
+        }
+
+        .card-body-media h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--media-dark);
+        }
+
+        .media-stats {
+            margin-top: 50px;
+            background: var(--media-dark);
+            color: #fff;
+            padding: 60px 0;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .stat-item h2 {
+            font-size: 2.5rem;
+            color: var(--media-red);
+        }
+
+        @media (max-width: 992px) {
+            .featured-media {
+                grid-template-columns: 1fr;
+            }
+
+            .video-sidebar {
+                border-left: none;
+                border-top: 1px solid #eee;
+            }
+
+            .media-hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li><a href="media.html" class="active">जन शक्ति मीडिया</a></li>
+                    <li><a href="index.html#contact">संपर्क</a></li>
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                </ul>
+                <div class="hamburger">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Media Hero -->
+    <section class="media-hero">
+        <div class="container">
+            <span class="media-banner"><i class="fa-solid fa-circle-dot"></i> LIVE Updates</span>
+            <h1>जन शक्ति मीडिया पोर्टल</h1>
+            <p>संविदा कर्मचारियों की आवाज़, जन-जन तक</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="media-container">
+        <!-- Featured Video Section -->
+        <div class="featured-media">
+            <div class="video-player">
+                <iframe src="https://www.youtube.com/embed/videoseries?list=UU-SfcILjXCZrTyeH9k"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="video-sidebar">
+                <h3 class="sidebar-title">लेटेस्ट वीडियो (Latest Videos)</h3>
+                <div class="video-list-item">
+                    <div class="video-thumb"><i class="fa-brands fa-youtube fa-2x"></i></div>
+                    <div class="video-info">
+                        <h4>धरना प्रदर्शन - लखनऊ 2025</h4>
+                        <small>2 days ago</small>
+                    </div>
+                </div>
+                <div class="video-list-item">
+                    <div class="video-thumb"><i class="fa-brands fa-youtube fa-2x"></i></div>
+                    <div class="video-info">
+                        <h4>प्रदेश अध्यक्ष का संबोधन</h4>
+                        <small>1 week ago</small>
+                    </div>
+                </div>
+                <div class="video-list-item">
+                    <div class="video-thumb"><i class="fa-brands fa-youtube fa-2x"></i></div>
+                    <div class="video-info">
+                        <h4>नियमितीकरण की मांग - बड़ी जीत</h4>
+                        <small>2 weeks ago</small>
+                    </div>
+                </div>
+                <a href="https://youtube.com/@upsokunion" target="_blank" class="btn-primary"
+                    style="display:block; text-align:center; padding:12px;">सभी वीडियो देखें</a>
+            </div>
+        </div>
+
+        <!-- Media Grid -->
+        <div class="media-grid">
+            <div class="news-card-media">
+                <div class="card-img-wrapper">
+                    <span class="category-badge">प्रेस विज्ञप्ति</span>
+                    <div
+                        style="height:100%; background:linear-gradient(45deg, #1a5f7a, #159895); display:flex; align-items:center; justify-content:center; color:#fff;">
+                        <i class="fa-solid fa-file-lines fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-body-media">
+                    <h3>संघ की मांगों पर सरकार का बड़ा फैसला</h3>
+                    <p>मुख्यमंत्री जी के साथ हुई वार्ता के बाद जारी हुआ आधिकारिक बयान...</p>
+                    <a href="#" class="read-more">आगे पढ़ें <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="news-card-media">
+                <div class="card-img-wrapper">
+                    <span class="category-badge">ग्राउंड रिपोर्ट</span>
+                    <div
+                        style="height:100%; background:linear-gradient(45deg, #e67e22, #d35400); display:flex; align-items:center; justify-content:center; color:#fff;">
+                        <i class="fa-solid fa-camera-retro fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-body-media">
+                    <h3>क्षेत्रीय समस्याओं का विश्लेषण</h3>
+                    <p>विभिन्न जिलों से आई ग्राउंड रिपोर्ट्स और कर्मचारियों के जमीनी हालात...</p>
+                    <a href="#" class="read-more">आगे पढ़ें <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="news-card-media">
+                <div class="card-img-wrapper">
+                    <span class="category-badge">कर्मचारी आवाज़</span>
+                    <div
+                        style="height:100%; background:linear-gradient(45deg, #6c5ce7, #a29bfe); display:flex; align-items:center; justify-content:center; color:#fff;">
+                        <i class="fa-solid fa-microphone-lines fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-body-media">
+                    <h3>सफलता की कहानियाँ</h3>
+                    <p>हमारे संघर्षशील साथियों के अनुभव और उनकी आपबीती...</p>
+                    <a href="#" class="read-more">आगे पढ़ें <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Media Stats -->
+        <div class="media-stats">
+            <div class="stat-item">
+                <h2>50K+</h2>
+                <p>YouTube Viewers</p>
+            </div>
+            <div class="stat-item">
+                <h2>100+</h2>
+                <p>Reports Published</p>
+            </div>
+            <div class="stat-item">
+                <h2>75</h2>
+                <p>Districts Covered</p>
+            </div>
+            <div class="stat-item">
+                <h2>24/7</h2>
+                <p>Media Coverage</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container footer-content">
+            <div class="footer-about">
+                <h3>संपर्क करें (Contact Us)</h3>
+                <p><i class="fa-solid fa-location-dot"></i> Plot no 6 saty ghatt purana top khana balaganj lucknow up
+                    india</p>
+                <p><i class="fa-solid fa-phone"></i> +91 7355303056, 6389664078</p>
+                <p><i class="fa-solid fa-envelope"></i> <a href="mailto:uposkunion@gmail.com">uposkunion@gmail.com</a>
+                </p>
+                <p><i class="fa-solid fa-globe"></i> <a href="https://www.uposkunion.in"
+                        target="_blank">www.uposkunion.in</a></p>
+            </div>
+            <div class="social-links">
+                <a href="https://www.facebook.com/share/17XMgLe1G7/?mibextid=wwXIfr" target="_blank"><i
+                        class="fa-brands fa-facebook"></i></a>
+                <a href="https://x.com/uposkunion?s=21" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://www.instagram.com/uposkunion?igsh=MW84bjZ5cnIzYmh5eA%3D%3D&utm_source=qr"
+                    target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://youtube.com/@upsokunion" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+                <a href="https://whatsapp.com/channel/0029Vb654IM2kNFwjtMRzj3O" target="_blank"><i
+                        class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ. सर्वाधिकार सुरक्षित।</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

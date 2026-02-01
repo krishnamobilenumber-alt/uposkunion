@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>रजिस्ट्रेशन - उत्तर प्रदेश आउटसोर्सिंग संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">News & Updates <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="news.html"><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार (Latest News)</a>
+                            <a href="events.html"><i class="fa-solid fa-calendar-days"></i> आगामी कार्यक्रम (Upcoming
+                                Events)</a>
+                            <a href="announcements.html"><i class="fa-solid fa-bullhorn"></i> घोषणाएं
+                                (Announcements)</a>
+                            <a href="gallery.html"><i class="fa-solid fa-images"></i> फोटो गैलरी (Photo Gallery)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सदस्य सूची <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="members_public.html">सदस्य सूची (Member List)</a>
+                            <a href="presidents_public.html">जिला अध्यक्ष सूची (District President List)</a>
+                        </div>
+                    </li>
+
+                    <li><a href="registration.html" class="active btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                    <li><a href="#" class="btn-app-download"><i class="fa-solid fa-download"></i> ऐप डाउनलोड</a></li>
+                </ul>
+                <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>सदस्यता पंजीकरण (Registration)</h1>
+            <p>अपनी जानकारी भरें और संघ का हिस्सा बनें</p>
+        </div>
+    </div>
+
+    <section class="container">
+        <div class="form-container">
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="name">पूरा नाम (Full Name)</label>
+                    <input type="text" id="name" placeholder="अपना नाम लिखें" required>
+                </div>
+
+                <div class="form-group photo-upload-container">
+                    <label for="photo">पासपोर्ट साइज फोटो (Passport Size Photo)</label>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <input type="file" id="photo" accept="image/*"
+                            style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #fff; flex: 1;">
+                        <div id="photo-preview-container"
+                            style="width: 100px; height: 125px; border: 2px dashed var(--secondary-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer;">
+                            <img id="photo-preview" src="" alt="Preview"
+                                style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <div id="photo-placeholder"
+                                style="color: #999; font-size: 0.75rem; text-align: center; padding: 5px;">
+                                <i class="fa-solid fa-user"
+                                    style="font-size: 1.5rem; margin-bottom: 5px; display: block; color: var(--secondary-color);"></i>
+                                प्रीव्यू (Preview)
+                            </div>
+                        </div>
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 5px;">* कृपया 1MB से कम साइज की फोटो अपलोड
+                        करें।</small>
+                </div>
+
+                <div class="form-group photo-upload-container">
+                    <label for="signature">हस्ताक्षर अपलोड करें (Upload Signature)</label>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <input type="file" id="signature" accept="image/*"
+                            style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #fff; flex: 1;"
+                            required>
+                        <div
+                            style="width: 150px; height: 60px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; background: #f9f9f9; overflow: hidden;">
+                            <img id="signature-preview" src=""
+                                style="width: 100%; height: 100%; object-fit: contain; display: none;">
+                            <span id="signature-placeholder" style="color: #bbb; font-size: 0.8rem;">Preview</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fname">पिता का नाम (Father's Name)</label>
+                    <input type="text" id="fname" placeholder="पिता का नाम">
+                </div>
+
+                <div class="form-group">
+                    <label for="dob">जन्म तिथि (Date of Birth)</label>
+                    <input type="date" id="dob">
+                </div>
+
+                <div class="form-group">
+                    <label for="mobile">मोबाइल नंबर (Mobile Number)</label>
+                    <input type="tel" id="mobile" placeholder="10 अंकों का मोबाइल नंबर" required pattern="[0-9]{10}">
+                </div>
+
+                <!-- Datalists for Searchable Options -->
+                <datalist id="district_list">
+                    <option value="Agra (आगरा)">Agra (आगरा)</option>
+                    <option value="Aligarh (अलीगढ़)">Aligarh (अलीगढ़)</option>
+                    <option value="Ambedkar Nagar (अम्बेडकर नगर)">Ambedkar Nagar (अम्बेडकर नगर)</option>
+                    <option value="Amethi (अमेठी)">Amethi (अमेठी)</option>
+                    <option value="Amroha (अमरोहा)">Amroha (अमरोहा)</option>
+                    <option value="Auraiya (औरैया)">Auraiya (औरैया)</option>
+                    <option value="Ayodhya (अयोध्या)">Ayodhya (अयोध्या)</option>
+                    <option value="Azamgarh (आजमगढ़)">Azamgarh (आजमगढ़)</option>
+                    <option value="Baghpat (बागपत)">Baghpat (बागपत)</option>
+                    <option value="Bahraich (बहराइच)">Bahraich (बहराइच)</option>
+                    <option value="Ballia (बलिया)">Ballia (बलिया)</option>
+                    <option value="Balrampur (बलरामपुर)">Balrampur (बलरामपुर)</option>
+                    <option value="Banda (बांदा)">Banda (बांदा)</option>
+                    <option value="Barabanki (बाराबंकी)">Barabanki (बाराबंकी)</option>
+                    <option value="Bareilly (बरेली)">Bareilly (बरेली)</option>
+                    <option value="Basti (बस्ती)">Basti (बस्ती)</option>
+                    <option value="Bhadohi (भदोही)">Bhadohi (भदोही)</option>
+                    <option value="Bijnor (बिजनौर)">Bijnor (बिजनौर)</option>
+                    <option value="Budaun (बदायूं)">Budaun (बदायूं)</option>
+                    <option value="Bulandshahr (बुलंदशहर)">Bulandshahr (बुलंदशहर)</option>
+                    <option value="Chandauli (चंदौली)">Chandauli (चंदौली)</option>
+                    <option value="Chitrakoot (चित्रकूट)">Chitrakoot (चित्रकूट)</option>
+                    <option value="Deoria (देवरिया)">Deoria (देवरिया)</option>
+                    <option value="Etah (एटा)">Etah (एटा)</option>
+                    <option value="Etawah (इटावा)">Etawah (इटावा)</option>
+                    <option value="Farrukhabad (फर्रुखाबाद)">Farrukhabad (फर्रुखाबाद)</option>
+                    <option value="Fatehpur (फतेहपुर)">Fatehpur (फतेहपुर)</option>
+                    <option value="Firozabad (फिरोजाबाद)">Firozabad (फिरोजाबाद)</option>
+                    <option value="Gautam Buddha Nagar (गौतम बुद्ध नगर)">Gautam Buddha Nagar (गौतम बुद्ध नगर)</option>
+                    <option value="Ghaziabad (गाजियाबाद)">Ghaziabad (गाजियाबाद)</option>
+                    <option value="Ghazipur (गाजीपुर)">Ghazipur (गाजीपुर)</option>
+                    <option value="Gonda (गोंडा)">Gonda (गोंडा)</option>
+                    <option value="Gorakhpur (गोरखपुर)">Gorakhpur (गोरखपुर)</option>
+                    <option value="Hamirpur (हमीरपुर)">Hamirpur (हमीरपुर)</option>
+                    <option value="Hapur (हापुड़)">Hapur (हापुड़)</option>
+                    <option value="Hardoi (हरदोई)">Hardoi (हरदोई)</option>
+                    <option value="Hathras (हाथरस)">Hathras (हाथरस)</option>
+                    <option value="Jalaun (जालौन)">Jalaun (जालौन)</option>
+                    <option value="Jaunpur (जौनपुर)">Jaunpur (जौनपुर)</option>
+                    <option value="Jhansi (झांसी)">Jhansi (झांसी)</option>
+                    <option value="Kannauj (कन्नौज)">Kannauj (कन्नौज)</option>
+                    <option value="Kanpur Dehat (कानपुर देहात)">Kanpur Dehat (कानपुर देहात)</option>
+                    <option value="Kanpur Nagar (कानपुर नगर)">Kanpur Nagar (कानपुर नगर)</option>
+                    <option value="Kasganj (कासगंज)">Kasganj (कासगंज)</option>
+                    <option value="Kaushambi (कौशाम्बी)">Kaushambi (कौशाम्बी)</option>
+                    <option value="Kushinagar (कुशीनगर)">Kushinagar (कुशीनगर)</option>
+                    <option value="Lakhimpur Kheri (लखीमपुर खीरी)">Lakhimpur Kheri (लखीमपुर खीरी)</option>
+                    <option value="Lalitpur (ललितपुर)">Lalitpur (लalitpur)</option>
+                    <option value="Lucknow (लखनऊ)">Lucknow (लखनऊ)</option>
+                    <option value="Maharajganj (महराजगंज)">Maharajganj (महराजगंज)</option>
+                    <option value="Mahoba (महोबा)">Mahoba (महोबा)</option>
+                    <option value="Mainpuri (मैनपुरी)">Mainpuri (मैनपुरी)</option>
+                    <option value="Mathura (मथुरा)">Mathura (मथुरा)</option>
+                    <option value="Mau (मऊ)">Mau (मऊ)</option>
+                    <option value="Meerut (मेरठ)">Meerut (मेरठ)</option>
+                    <option value="Mirzapur (मिर्जापुर)">Mirzapur (मिर्जापुर)</option>
+                    <option value="Moradabad (मुरादाबाद)">Moradabad (मुरादाबाद)</option>
+                    <option value="Muzaffarnagar (मुजफ्फरनगर)">Muzaffarnagar (मुजफ्फरनगर)</option>
+                    <option value="Pilibhit (पीलीभीत)">Pilibhit (पीलीभीत)</option>
+                    <option value="Pratapgarh (प्रतापगढ़)">Pratapgarh (प्रतापगढ़)</option>
+                    <option value="Prayagraj (प्रयागराज)">Prayagraj (प्रयागराज)</option>
+                    <option value="Raebareli (रायबरेली)">Raebareli (रायबरेली)</option>
+                    <option value="Rampur (रामपुर)">Rampur (रामपुर)</option>
+                    <option value="Saharanpur (सहारनपुर)">Saharanpur (सहारनपुर)</option>
+                    <option value="Sambhal (संभल)">Sambhal (संभल)</option>
+                    <option value="Sant Kabir Nagar (संत कबीर नगर)">Sant Kabir Nagar (संत कबीर नगर)</option>
+                    <option value="Shahjahanpur (शाहजहांपुर)">Shahjahanpur (शाहजहांपुर)</option>
+                    <option value="Shamli (शामली)">Shamli (शामली)</option>
+                    <option value="Shravasti (श्रावस्ती)">Shravasti (श्रावस्ती)</option>
+                    <option value="Siddharthnagar (सिद्धार्थनगर)">Siddharthnagar (सिद्धार्थनगर)</option>
+                    <option value="Sitapur (सीतापुर)">Sitapur (सीतापुर)</option>
+                    <option value="Sonbhadra (सोनभद्र)">Sonbhadra (Sonbhadra)</option>
+                    <option value="Sultanpur (सुल्तानपुर)">Sultanpur (Sultanpur)</option>
+                    <option value="Unnao (उन्नाव)">Unnao (उन्नाव)</option>
+                    <option value="Varanasi (वाराणसी)">Varanasi (वाराणसी)</option>
+                </datalist>
+
+                <datalist id="dept_list">
+                    <option value="Medical Health (चिकित्सा एवं स्वास्थ्य)">Medical Health (चिकित्सा एवं स्वास्थ्य)
+                    </option>
+                    <option value="Basic Education (बेसिक शिक्षा)">Basic Education (बेसिक शिक्षा)</option>
+                    <option value="Secondary Education (माध्यमिक शिक्षा)">Secondary Education (माध्यमिक शिक्षा)</option>
+                    <option value="Police (पुलिस विभाग)">Police (पुलिस विभाग)</option>
+                    <option value="Transport (परिवहन निगम)">Transport (परिवहन निगम)</option>
+                    <option value="Electricity (विद्युत विभाग)">Electricity (विद्युत विभाग)</option>
+                    <option value="Nagar Nigam (नगर निगम/पालिका)">Nagar Nigam (नगर निगम/पालिका)</option>
+                    <option value="PWD (लोक निर्माण विभाग)">PWD (लोक निर्माण विभाग)</option>
+                    <option value="Irrigation (सिंचाई विभाग)">Irrigation (सिंचाई विभाग)</option>
+                    <option value="Revenue (राजस्व विभाग)">Revenue (राजस्व विभाग)</option>
+                    <option value="Social Welfare (समाज कल्याण)">Social Welfare (समाज कल्याण)</option>
+                    <option value="Agriculture (कृषि विभाग)">Agriculture (कृषि विभाग)</option>
+                    <option value="Panchayati Raj (पंचायती राज)">Panchayati Raj (पंचायती राज)</option>
+                    <option value="Rural Development (ग्राम्य विकास)">Rural Development (ग्राम्य विकास)</option>
+                    <option value="Other (अन्य)">Other (अन्य)</option>
+                </datalist>
+
+                <datalist id="post_list">
+                    <option value="Computer Operator (कंप्यूटर ऑपरेटर)">Computer Operator (कंप्यूटर ऑपरेटर)</option>
+                    <option value="Data Entry Operator (डाटा एंट्री ऑपरेटर)">Data Entry Operator (डाटा एंट्री ऑपरेटर)
+                    </option>
+                    <option value="Junior Assistant (कनिष्ठ सहायक)">Junior Assistant (कनिष्ठ सहायक)</option>
+                    <option value="Driver (वाहन चालक)">Driver (वाहन चालक)</option>
+                    <option value="Conductor (परिचालक)">Conductor (परिचालक)</option>
+                    <option value="Peon (चपरासी)">Peon (चपरासी)</option>
+                    <option value="Sweeper (सफाई कर्मचारी)">Sweeper (सफाई कर्मचारी)</option>
+                    <option value="Ward Boy (वार्ड बॉय)">Ward Boy (वार्ड बॉय)</option>
+                    <option value="Nurse (नर्स)">Nurse (नर्स)</option>
+                    <option value="Lab Technician (लैब टेक्नीशियन)">Lab Technician (लैब टेक्नीशियन)</option>
+                    <option value="Electrician (इलेक्ट्रीशियन)">Electrician (इलेक्ट्रीशियन)</option>
+                    <option value="Lineman (लाइनमैन)">Lineman (लाइनमैन)</option>
+                    <option value="Meter Reader (मीटर रीडर)">Meter Reader (मीटर रीडर)</option>
+                    <option value="Security Guard (सुरक्षा गार्ड)">Security Guard (सुरक्षा गार्ड)</option>
+                    <option value="Helper (हेल्पर)">Helper (हेल्पर)</option>
+                    <option value="Supervisor (सुपरवाइजर)">Supervisor (सुपरवाइजर)</option>
+                    <option value="Other (अन्य)">Other (अन्य)</option>
+                </datalist>
+
+                <div class="form-group">
+                    <label for="home_district">गृह जनपद (Home District)</label>
+                    <input type="text" id="home_district" list="district_list"
+                        placeholder="अपना गृह जनपद चुनें/खोजें..." required onchange="updateHomeBlocksByDistrict()">
+                </div>
+
+                <div class="form-group">
+                    <label for="home_tahsil">गृह तहसील (Home Tehsil)</label>
+                    <select id="home_tahsil" required
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: white;">
+                        <option value="">-- जिला चुनने के बाद तहसील चुनें --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="home_block">गृह विकास खंड (Home Block)</label>
+                    <select id="home_block" required
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: white;">
+                        <option value="">-- जिला चुनने के बाद ब्लॉक चुनें --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="home_address_group">
+                    <label for="home_address">गृह पूरा पता (Home Full Address)</label>
+                    <textarea id="home_address" rows="3"
+                        placeholder="ग्राम/मकान नंबर, पोस्ट, मोहल्ला, पिनकोड सहित पूरा पता लिखें..."
+                        required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="work_district">कार्यस्थल जिला (Work District)</label>
+                    <input type="text" id="work_district" list="district_list" placeholder="कार्यस्थल जिला चुनें..."
+                        required onchange="updateBlocksByDistrict()">
+                </div>
+
+                <div class="form-group">
+                    <label for="work_tahsil">तहसील (Tehsil)</label>
+                    <select id="work_tahsil" required
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: white;">
+                        <option value="">-- जिला चुनने के बाद तहसील चुनें --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="work_block">विकास खंड (Vikas Khand / Block)</label>
+                    <select id="work_block" required
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: white;">
+                        <option value="">-- जिला चुनने के बाद ब्लॉक चुनें --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="work_address_group">
+                    <label for="work_address">कार्यस्थल पूरा पता (Workplace Full Address)</label>
+                    <textarea id="work_address" rows="3"
+                        placeholder="वर्तमान कार्यस्थल का पूरा पता, विभाग/कार्यालय विवरण सहित..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="department">विभाग (Department)</label>
+                    <input type="text" id="department" list="dept_list" placeholder="विभाग चुनें/खोजें..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="post">पद (Post Designation)</label>
+                    <input type="text" id="post" list="post_list" placeholder="पद चुनें/खोजें..." required>
+                </div>
+
+                <!-- Membership Plan Removed as per Request -->
+
+                <div class="form-group">
+                    <label for="regPassword">पासवर्ड बनाएं (Create Password)</label>
+                    <input type="text" id="regPassword" placeholder="लॉगिन के लिए पासवर्ड बनाएं" required minlength="4">
+                    <small style="color:red; font-size:0.8rem;">* कृपया अपना पासवर्ड याद रखें, यह लॉगिन के लिए आवश्यक
+                        है।</small>
+                </div>
+
+
+
+                <div class="form-group full-width">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">रजिस्टर करें</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container footer-content">
+            <div class="footer-about">
+                <h3>संपर्क करें (Contact Us)</h3>
+                <p><i class="fa-solid fa-location-dot"></i> Plot no 6 saty ghatt purana top khana balaganj lucknow up
+                    india</p>
+                <p><i class="fa-solid fa-phone"></i> +91 7355303056, 6389664078</p>
+                <p><i class="fa-solid fa-envelope"></i> <a href="mailto:uposkunion@gmail.com">uposkunion@gmail.com</a>
+                </p>
+                <p><i class="fa-solid fa-globe"></i> <a href="https://www.uposkunion.in"
+                        target="_blank">www.uposkunion.in</a></p>
+            </div>
+            <div class="social-links">
+                <a href="https://www.facebook.com/share/17XMgLe1G7/?mibextid=wwXIfr" target="_blank"><i
+                        class="fa-brands fa-facebook"></i></a>
+                <a href="https://x.com/uposkunion?s=21" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://www.instagram.com/uposkunion?igsh=MW84bjZ5cnIzYmh5eA%3D%3D&utm_source=qr"
+                    target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://youtube.com/@upsokunion?si=SfcILjXCZrTyeH9k" target="_blank"><i
+                        class="fa-brands fa-youtube"></i></a>
+                <a href="https://whatsapp.com/channel/0029Vb654IM2kNFwjtMRzj3O" target="_blank"><i
+                        class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ. सर्वाधिकार सुरक्षित।</p>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="success-modal">
+            <div class="success-icon-container">
+                <i class="fa-solid fa-check success-icon"></i>
+            </div>
+            <h3 class="modal-title">बधाई हो! (Success)</h3>
+            <p id="modalMessage" class="modal-message">
+                आपका रजिस्ट्रेशन सफलतापूर्वक हो गया है।
+            </p>
+            <button class="btn-modal" onclick="closeModal()">ठीक है (OK)</button>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="script.js?v=3.4"></script>
+</body>
+
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>विभाग - उत्तर प्रदेश आउटसोर्सिंग संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li><a href="members.html">सदस्य सूची</a></li>
+                    <li><a href="departments.html" class="active">विभाग</a></li>
+                    <li><a href="issues.html">समस्या और समाधान</a></li>
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                    <li><a href="#" class="btn-app-download"><i class="fa-solid fa-download"></i> ऐप डाउनलोड</a></li>
+                </ul>
+                <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>जुड़े हुए विभाग (Departments)</h1>
+            <p>विभिन्न विभागों की सूची और जानकारी</p>
+        </div>
+    </div>
+
+    <section class="container section-padding">
+        <!-- populated by js -->
+        <div class="dept-list"></div>
+    </section>
+
+    <footer>
+        <div class="container center-text">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

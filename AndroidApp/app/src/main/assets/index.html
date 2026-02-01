@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">News & Updates <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="news.html"><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार (Latest News)</a>
+                            <a href="events.html"><i class="fa-solid fa-calendar-days"></i> आगामी कार्यक्रम (Upcoming
+                                Events)</a>
+                            <a href="announcements.html"><i class="fa-solid fa-bullhorn"></i> घोषणाएं
+                                (Announcements)</a>
+                            <a href="gallery.html"><i class="fa-solid fa-images"></i> फोटो गैलरी (Photo Gallery)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सदस्य सूची <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="members_public.html">सदस्य सूची (Member List)</a>
+                            <a href="presidents_public.html">जिला अध्यक्ष सूची (District President List)</a>
+                        </div>
+                    </li>
+
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                    <li><a href="#" class="btn-app-download"><i class="fa-solid fa-download"></i> ऐप डाउनलोड</a></li>
+                </ul>
+                <div class="hamburger">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Marquee for News -->
+    <div class="news-ticker">
+        <span class="ticker-label">ताज़ा खबर:</span>
+        <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
+            लखनऊ में विशाल धरना प्रदर्शन 15 तारीख को! | सभी संविदा कर्मचारियों के लिए वेतन वृद्धि का प्रस्ताव पारित। |
+            नई नियमावली जल्द लागू होगी।
+        </marquee>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h2>हमारा अधिकार, हमारा सम्मान</h2>
+                <p>उत्तर प्रदेश के लाखों आउटसोर्सिंग और संविदा कर्मचारियों की आवाज़। हम लड़ेंगे आपके हक़ के लिए, जुड़िये
+                    हमारे साथ।</p>
+                <div class="hero-buttons">
+                    <a href="registration.html" class="btn btn-lg">सदस्य बनें</a>
+                    <a href="donation.html" class="btn btn-lg" style="background:#e67e22; border-color:#e67e22;">सहयोग
+                        (Donation)</a>
+                    <a href="#about" class="btn btn-outline">और जानें</a>
+                    <a href="media.html" class="btn btn-lg" style="background:#ff0000; border-color:#ff0000;">
+                        <i class="fa-brands fa-youtube"></i> जन शक्ति मीडिया
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <!-- Using a placeholder icon/illustration if image not available, user can update -->
+                <i class="fa-solid fa-handshake-angle fa-10x"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features/Services Section -->
+    <section class="features section-padding" id="about">
+        <div class="container">
+            <h2 class="section-title">हमारा उद्देश्य</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="icon-box"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <h3>समान कार्य समान वेतन</h3>
+                    <p>हमारा मुख्य लक्ष्य है कि सभी को उनके काम के अनुसार उचित वेतन मिले।</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fa-solid fa-shield-heart"></i></div>
+                    <h3>नौकरी की सुरक्षा</h3>
+                    <p>संविदा कर्मियों को नियमित करने और नौकरी की सुरक्षा दिलाने के लिए संघर्ष।</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fa-solid fa-gavel"></i></div>
+                    <h3>कानूनी सहायता</h3>
+                    <p>किसी भी अन्याय के खिलाफ़ हम अपने साथियों को कानूनी मदद प्रदान करते हैं।</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Officers Slider Section -->
+    <section class="section-padding" style="background-color: #f9f9f9; overflow: hidden;">
+        <div class="container">
+            <h2 class="section-title">मुख्य पदाधिकारी (Key Officers)</h2>
+            <div class="officers-slider-container">
+                <div class="officers-slider">
+                    <!-- State President -->
+                    <div class="profile-card-vertical" style="border-left-color: #e74c3c;">
+                        <img src="deepak_bajpai.jpg" alt="President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री दीपक बाजपेयी</h3>
+                            <p class="post">प्रदेश अध्यक्ष</p>
+                        </div>
+                    </div>
+                    <!-- State Vice President -->
+                    <div class="profile-card-vertical" style="border-left-color: #e74c3c;">
+                        <img src="santosh_gupta.jpg" alt="Vice President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री संतोष गुप्ता</h3>
+                            <p class="post">प्रदेश उपाध्यक्ष</p>
+                        </div>
+                    </div>
+                    <!-- State Secretary -->
+                    <div class="profile-card-vertical" style="border-left-color: #e74c3c;">
+                        <img src="sanjay_verma.jpg" alt="Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री संजय कुमार वर्मा</h3>
+                            <p class="post">प्रदेश महामंत्री</p>
+                        </div>
+                    </div>
+                    <!-- Additional Officers -->
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="virendra_pal_new.jpg" alt="Joint Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री वीरेन्द्र पाल</h3>
+                            <p class="post">प्रदेश संयुक्त मंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="rohit_gautam.jpg" alt="Joint Assistant Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री आर. रोहित गौतम</h3>
+                            <p class="post">प्रदेश संयुक्त सहायक मंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="shivam_pal.jpg" alt="Publicity Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री शिवम पाल</h3>
+                            <p class="post">प्रदेश प्रचार मंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="ashok_kumar.jpg" alt="Treasurer" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री अशोक कुमार</h3>
+                            <p class="post">प्रदेश कोषाध्यक्ष</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #9b59b6;">
+                        <img src="bharti_narvariya.jpg" alt="Women President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>सुश्री भारती नरवरिया</h3>
+                            <p class="post">प्रदेश महिला अध्यक्ष</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #f39c12;">
+                        <img src="krishna_kumar.jpg" alt="Youth President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री कृष्णा कुमार</h3>
+                            <p class="post">प्रदेश युवा अध्यक्ष</p>
+                        </div>
+                    </div>
+
+                    <!-- Duplicate cards for seamless loop -->
+                    <div class="profile-card-vertical" style="border-left-color: #e74c3c;">
+                        <img src="deepak_bajpai.jpg" alt="President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री दीपक बाजपेयी</h3>
+                            <p class="post">प्रदेश अध्यक्ष</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #e74c3c;">
+                        <img src="santosh_gupta.jpg" alt="Vice President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री संतोष गुप्ता</h3>
+                            <p class="post">प्रदेश उपाध्यक्ष</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #e74c3c;">
+                        <img src="sanjay_verma.jpg" alt="Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री संजय कुमार वर्मा</h3>
+                            <p class="post">प्रदेश महामंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="virendra_pal_new.jpg" alt="Joint Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री वीरेन्द्र पाल</h3>
+                            <p class="post">प्रदेश संयुक्त मंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="rohit_gautam.jpg" alt="Joint Assistant Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री आर. रोहित गौतम</h3>
+                            <p class="post">प्रदेश संयुक्त सहायक मंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="shivam_pal.jpg" alt="Publicity Secretary" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री शिवम पाल</h3>
+                            <p class="post">प्रदेश प्रचार मंत्री</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #3498db;">
+                        <img src="ashok_kumar.jpg" alt="Treasurer" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री अशोक कुमार</h3>
+                            <p class="post">प्रदेश कोषाध्यक्ष</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #9b59b6;">
+                        <img src="bharti_narvariya.jpg" alt="Women President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>सुश्री भारती नरवरिया</h3>
+                            <p class="post">प्रदेश महिला अध्यक्ष</p>
+                        </div>
+                    </div>
+                    <div class="profile-card-vertical" style="border-left-color: #f39c12;">
+                        <img src="krishna_kumar.jpg" alt="Youth President" class="profile-img-vertical">
+                        <div class="profile-info">
+                            <h3>श्री कृष्णा कुमार</h3>
+                            <p class="post">प्रदेश युवा अध्यक्ष</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container footer-content">
+            <div class="footer-about">
+                <h3>संपर्क करें (Contact Us)</h3>
+                <p><i class="fa-solid fa-location-dot"></i> Plot no 6 saty ghatt purana top khana balaganj lucknow up
+                    india</p>
+                <p><i class="fa-solid fa-phone"></i> +91 7355303056, 6389664078</p>
+                <p><i class="fa-solid fa-envelope"></i> <a href="mailto:uposkunion@gmail.com">uposkunion@gmail.com</a>
+                </p>
+                <p><i class="fa-solid fa-globe"></i> <a href="https://www.uposkunion.in"
+                        target="_blank">www.uposkunion.in</a></p>
+            </div>
+            <div class="social-links">
+                <a href="https://www.facebook.com/share/17XMgLe1G7/?mibextid=wwXIfr" target="_blank"><i
+                        class="fa-brands fa-facebook"></i></a>
+                <a href="https://x.com/uposkunion?s=21" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://www.instagram.com/uposkunion?igsh=MW84bjZ5cnIzYmh5eA%3D%3D&utm_source=qr"
+                    target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://youtube.com/@upsokunion?si=SfcILjXCZrTyeH9k" target="_blank"><i
+                        class="fa-brands fa-youtube"></i></a>
+                <a href="https://whatsapp.com/channel/0029Vb654IM2kNFwjtMRzj3O" target="_blank"><i
+                        class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ. सर्वाधिकार सुरक्षित।</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सदस्य सूची (Member List) - उत्तर प्रदेश आउटसोर्सिंग संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सदस्य सूची <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="members_public.html">सदस्य सूची (Member List)</a>
+                            <a href="presidents_public.html">जिला अध्यक्ष सूची (District President List)</a>
+                        </div>
+                    </li>
+
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                </ul>
+                <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>सदस्य सूची (Members List)</h1>
+            <p>हमारे सक्रिय सदस्य एवं जिला अध्यक्षों की सूची</p>
+        </div>
+    </div>
+
+    <section class="container section-padding">
+
+        <!-- Tabs -->
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="openTab(event, 'AllMembers')">सभी सदस्य (All Members)</button>
+            <button class="tab-btn" onclick="openTab(event, 'DistrictPresidents')">जिला अध्यक्ष (District
+                Presidents)</button>
+        </div>
+
+        <!-- Search Bar -->
+        <!-- Search Bar -->
+        <div class="search-container">
+            <select id="searchFilter">
+                <option value="all">सभी (All)</option>
+                <option value="name">नाम (Name)</option>
+                <option value="district">जिला (District)</option>
+                <option value="post">पद (Post)</option>
+                <option value="dept">विभाग (Department)</option>
+            </select>
+            <input type="text" id="memberSearch" placeholder="सर्च करें... (Search)">
+        </div>
+
+        <!-- All Members Content -->
+        <div id="AllMembers" class="tab-content active">
+            <h2 class="section-title">सभी पंजीकृत सदस्य</h2>
+            <div class="cards-grid">
+                <!-- Sample Member 1 -->
+                <div class="profile-card">
+                    <img src="https://via.placeholder.com/100" alt="Member" class="profile-img">
+                    <h3>राजेश कुमार</h3>
+                    <p class="post">कनिष्ठ सहायक</p>
+                    <p>विभाग: चिकित्सा</p>
+                    <p>जिला: लखनऊ</p>
+                </div>
+                <!-- Sample Member 2 -->
+                <div class="profile-card">
+                    <img src="https://via.placeholder.com/100" alt="Member" class="profile-img">
+                    <h3>अमित सिंह</h3>
+                    <p class="post">कंप्यूटर ऑपरेटर</p>
+                    <p>विभाग: बेसिक शिक्षा</p>
+                    <p>जिला: कानपुर</p>
+                </div>
+                <!-- Sample Member 3 -->
+                <div class="profile-card">
+                    <img src="https://via.placeholder.com/100" alt="Member" class="profile-img">
+                    <h3>सुनीता वर्मा</h3>
+                    <p class="post">परिचारिका</p>
+                    <p>विभाग: स्वास्थ्य विभाग</p>
+                    <p>जिला: वाराणसी</p>
+                </div>
+                <!-- Sample Member 4 -->
+                <div class="profile-card">
+                    <img src="https://via.placeholder.com/100" alt="Member" class="profile-img">
+                    <h3>विनय यादव</h3>
+                    <p class="post">चालक</p>
+                    <p>विभाग: परिवहन</p>
+                    <p>जिला: गोरखपुर</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- District Presidents Content -->
+        <div id="DistrictPresidents" class="tab-content">
+            <h2 class="section-title">जिला अध्यक्ष सूची</h2>
+            <div class="cards-grid">
+                <!-- Sample President 1 -->
+                <div class="profile-card" style="border-top-color: #e67e22;">
+                    <img src="https://via.placeholder.com/100" alt="President" class="profile-img">
+                    <h3>श्री रमेश चंद्र</h3>
+                    <p class="post">जिला अध्यक्ष</p>
+                    <p><strong>जिला: लखनऊ</strong></p>
+                    <p>मो: 9876543210</p>
+                </div>
+                <!-- Sample President 2 -->
+                <div class="profile-card" style="border-top-color: #e67e22;">
+                    <img src="https://via.placeholder.com/100" alt="President" class="profile-img">
+                    <h3>श्री विवेक शर्मा</h3>
+                    <p class="post">जिला अध्यक्ष</p>
+                    <p><strong>जिला: कानपुर नगर</strong></p>
+                    <p>मो: 9123456780</p>
+                </div>
+                <!-- Sample President 3 -->
+                <div class="profile-card" style="border-top-color: #e67e22;">
+                    <img src="https://via.placeholder.com/100" alt="President" class="profile-img">
+                    <h3>मो. इरफान</h3>
+                    <p class="post">जिला अध्यक्ष</p>
+                    <p><strong>जिला: प्रयागराज</strong></p>
+                    <p>मो: 9988776655</p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <footer>
+        <div class="container center-text">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Search Functionality
+        // Search Functionality
+        document.getElementById('memberSearch').addEventListener('keyup', filterMembers);
+        document.getElementById('searchFilter').addEventListener('change', filterMembers);
+
+        function filterMembers() {
+            let filter = document.getElementById('memberSearch').value.toUpperCase();
+            let category = document.getElementById('searchFilter').value;
+            let cards = document.querySelectorAll('.profile-card');
+
+            cards.forEach(card => {
+                let text = "";
+
+                if (category === "all") {
+                    text = card.innerText.toUpperCase();
+                } else if (category === "name") {
+                    text = card.querySelector('h3').innerText.toUpperCase();
+                } else if (category === "district") {
+                    // Start checking all p tags for district keywords
+                    let pTags = card.querySelectorAll('p');
+                    pTags.forEach(p => {
+                        if (p.innerText.includes("जिला")) text += p.innerText.toUpperCase();
+                    });
+                } else if (category === "post") {
+                    let post = card.querySelector('.post');
+                    if (post) text = post.innerText.toUpperCase();
+                } else if (category === "dept") {
+                    let pTags = card.querySelectorAll('p');
+                    pTags.forEach(p => {
+                        if (p.innerText.includes("विभाग")) text += p.innerText.toUpperCase();
+                    });
+                }
+
+                if (text.indexOf(filter) > -1) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function openTab(evt, tabName) {
+            var i, tabContent, tabBtns;
+
+            // Hide all tab content
+            tabContent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].style.display = "none";
+                tabContent[i].classList.remove("active");
+            }
+
+            // Remove active class from all buttons
+            tabBtns = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].className = tabBtns[i].className.replace(" active", "");
+            }
+
+            // Show the current tab and add active class to button
+            document.getElementById(tabName).style.display = "block";
+            setTimeout(() => {
+                document.getElementById(tabName).classList.add("active");
+            }, 10);
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+
+</html>

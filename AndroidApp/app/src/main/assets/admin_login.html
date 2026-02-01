@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>एडमिन लॉगिन - उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            color: #0056b3;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .btn-login {
+            background: #0056b3;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #004494;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 1rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fa-solid fa-user-shield login-logo"></i>
+            <h2>एडमिन लॉगिन (Admin Login)</h2>
+            <p style="color: #0056b3; font-weight: bold; margin-bottom: 0.5rem;">संगठित शक्ति, सुरक्षित भविष्य</p>
+            <p>कृपया अपनी पहचान सत्यापित करें</p>
+        </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">यूज़रनेम (Username)</label>
+                <input type="text" id="username" placeholder="Enter Username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">पासवर्ड (Password)</label>
+                <div style="position: relative;">
+                    <input type="password" id="password" placeholder="Enter Password" required
+                        style="padding-right: 40px;">
+                    <i class="fa-solid fa-eye" id="togglePassword"
+                        style="position: absolute; right: 10px; top: 12px; cursor: pointer; color: #666;"></i>
+                </div>
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="showPassCheckbox" style="width: auto;">
+                <label for="showPassCheckbox" style="margin: 0; font-weight: normal; cursor: pointer;">पासवर्ड दिखाएं
+                    (Show Password)</label>
+            </div>
+            <button type="submit" class="btn-login">लॉगिन करें (Login)</button>
+        </form>
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> होम पेज पर वापस जाएं</a>
+    </div>
+
+    <!-- External script for other features -->
+    <script src="script.js?v=4"></script>
+</body>
+
+</html>

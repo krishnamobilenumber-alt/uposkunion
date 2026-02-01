@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>लॉगिन - उत्तर प्रदेश आउटसोर्सिंग संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">News & Updates <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="news.html"><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार (Latest News)</a>
+                            <a href="events.html"><i class="fa-solid fa-calendar-days"></i> आगामी कार्यक्रम (Upcoming
+                                Events)</a>
+                            <a href="announcements.html"><i class="fa-solid fa-bullhorn"></i> घोषणाएं
+                                (Announcements)</a>
+                            <a href="gallery.html"><i class="fa-solid fa-images"></i> फोटो गैलरी (Photo Gallery)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सदस्य सूची <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="members_public.html">सदस्य सूची (Member List)</a>
+                            <a href="presidents_public.html">जिला अध्यक्ष सूची (District President List)</a>
+                        </div>
+                    </li>
+
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="active btn-secondary">लॉगिन</a></li>
+                    <li><a href="#" class="btn-app-download"><i class="fa-solid fa-download"></i> ऐप डाउनलोड</a></li>
+                </ul>
+                <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>लॉगिन (Login)</h1>
+            <p>कृपया अपने खाते में प्रवेश करें</p>
+        </div>
+    </div>
+
+    <section class="container section-padding">
+        <div class="cards-grid">
+            <!-- Member Login -->
+            <div class="card">
+                <div class="icon-box"><i class="fa-solid fa-user-group"></i></div>
+                <h3>सदस्य लॉगिन (Member Login)</h3>
+                <p>पंजीकृत सदस्य यहाँ लॉगिन करें</p>
+                <form id="memberLoginForm" style="margin-top: 20px; text-align: left;">
+                    <div class="form-group">
+                        <label>मोबाइल नंबर (Mobile Number)</label>
+                        <input type="text" id="memberMobile" placeholder="अपना मोबाइल नंबर दर्ज करें" required>
+                    </div>
+                    <div class="form-group">
+                        <label>पासवर्ड (Password)</label>
+                        <div style="position: relative;">
+                            <input type="password" id="memberPass" placeholder="अपना पासवर्ड दर्ज करें" required
+                                style="padding-right: 40px;">
+                            <i class="fa-solid fa-eye" id="toggleMemberPass"
+                                style="position: absolute; right: 10px; top: 12px; cursor: pointer; color: #666;"></i>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <input type="checkbox" id="showMemberPassCheck"> <label for="showMemberPassCheck"
+                            style="display:inline; font-weight:normal;">पासवर्ड दिखाएं</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">लॉगिन करें (Member
+                        Login)</button>
+                    <div style="margin-top: 10px; text-align: center;">
+                        <a href="registration.html" style="font-size: 0.9rem; color: var(--primary-color);">खाता नहीं
+                            है? रजिस्टर करें</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Admin Login -->
+            <div class="card">
+                <div class="icon-box"><i class="fa-solid fa-user-shield"></i></div>
+                <h3>प्रशासनिक लॉगिन (Admin Login)</h3>
+                <p>केवल अधिकारियों के लिए</p>
+                <form id="mainAdminLoginForm" style="margin-top: 20px; text-align: left;">
+                    <div class="form-group">
+                        <label>Admin ID (Username)</label>
+                        <input type="text" id="adminUser" placeholder="Admin ID दर्ज करें" required>
+                    </div>
+                    <div class="form-group">
+                        <label>पासवर्ड (Password)</label>
+                        <div style="position: relative;">
+                            <input type="password" id="adminPass" placeholder="पासवर्ड दर्ज करें" required
+                                style="padding-right: 40px;">
+                            <i class="fa-solid fa-eye" id="toggleAdminPass"
+                                style="position: absolute; right: 10px; top: 12px; cursor: pointer; color: #666;"></i>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <input type="checkbox" id="showAdminPassCheck"> <label for="showAdminPassCheck"
+                            style="display:inline; font-weight:normal;">पासवर्ड दिखाएं</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">लॉगिन करें (Admin Login)</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container center-text">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

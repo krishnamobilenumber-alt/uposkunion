@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>समस्या और समाधान - उत्तर प्रदेश आउटसोर्सिंग संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .accordion {
+            background-color: #fff;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            transition: 0.4s;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Tiro Devanagari Hindi', serif;
+        }
+
+        .active,
+        .accordion:hover {
+            background-color: #f1f1f1;
+            color: var(--primary-color);
+        }
+
+        .accordion:after {
+            content: '\002B';
+            color: #777;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-bottom: 1px solid transparent;
+        }
+
+        .panel p {
+            padding: 15px 0;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">News & Updates <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="news.html"><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार (Latest News)</a>
+                            <a href="events.html"><i class="fa-solid fa-calendar-days"></i> आगामी कार्यक्रम (Upcoming
+                                Events)</a>
+                            <a href="announcements.html"><i class="fa-solid fa-bullhorn"></i> घोषणाएं
+                                (Announcements)</a>
+                            <a href="gallery.html"><i class="fa-solid fa-images"></i> फोटो गैलरी (Photo Gallery)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सदस्य सूची <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="members_public.html">सदस्य सूची (Member List)</a>
+                            <a href="presidents_public.html">जिला अध्यक्ष सूची (District President List)</a>
+                        </div>
+                    </li>
+
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                    <li><a href="#" class="btn-app-download"><i class="fa-solid fa-download"></i> ऐप डाउनलोड</a></li>
+                </ul>
+                <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>समस्या और समाधान (Issues & Solutions)</h1>
+            <p>अक्सर पूछे जाने वाले सवाल और अपनी शिकायत दर्ज करें</p>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="container section-padding">
+        <h2 class="section-title">सामान्य प्रश्न (FAQ)</h2>
+
+        <button class="accordion">क्या संविदा कर्मियों को PF का लाभ मिलता है?</button>
+        <div class="panel">
+            <p>जी हाँ, ईपीएफओ (EPFO) के नियमानुसार, यदि किसी संस्थान में 20 से अधिक कर्मचारी हैं, तो संविदा कर्मचारियों
+                का भी पीएफ कटना अनिवार्य है। अधिक जानकारी के लिए अपने विभाग से संपर्क करें।</p>
+        </div>
+
+        <button class="accordion">वेतन समय पर न मिलने पर क्या करें?</button>
+        <div class="panel">
+            <p>यदि वेतन में देरी हो रही है, तो आप अपने सेवा प्रदाता (Service Provider) को लिखित शिकायत दे सकते हैं। साथ
+                ही श्रम विभाग (Labour Court) में शिकायत दर्ज कराई जा सकती है।</p>
+        </div>
+
+        <button class="accordion">क्या मुझे साप्ताहिक अवकाश मिलेगा?</button>
+        <div class="panel">
+            <p>श्रम कानूनों के अनुसार, प्रत्येक कर्मचारी को सप्ताह में कम से कम एक दिन का सवैतनिक अवकाश (Weekly Off)
+                मिलना अनिवार्य है।</p>
+        </div>
+
+        <button class="accordion">नौकरी से निकालने की धमकी मिलने पर क्या करें?</button>
+        <div class="panel">
+            <p>किसी भी कर्मचारी को बिना उचित कारण और नोटिस के नौकरी से नहीं निकाला जा सकता। ऐसी स्थिति में आप संघ से
+                संपर्क करें और कानूनी सहायता लें।</p>
+        </div>
+    </section>
+
+    <!-- Complaint Form -->
+    <section class="container section-padding" style="background-color: #f9f9f9;">
+        <h2 class="section-title">अपनी समस्या बताएं</h2>
+        <div class="form-container">
+            <form id="issueForm">
+                <div class="form-group">
+                    <label for="c_name">नाम</label>
+                    <input type="text" id="c_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="c_dept">विभाग</label>
+                    <input type="text" id="c_dept" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="c_issue">समस्या का विवरण</label>
+                    <textarea id="c_issue" placeholder="कृपया अपनी समस्या विस्तार से लिखें..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="c_proof">दस्तावेज़ (यदि कोई हो)</label>
+                    <input type="file" id="c_proof">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">शिकायत दर्ज करें</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container center-text">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

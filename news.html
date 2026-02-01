@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ताज़ा समाचार - उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .news-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .news-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .news-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+        }
+
+        .news-content {
+            padding: 25px;
+        }
+
+        .news-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .news-badge.urgent {
+            background: #e74c3c;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .news-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .news-excerpt {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .news-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .read-more {
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: gap 0.3s ease;
+        }
+
+        .read-more:hover {
+            gap: 10px;
+            color: var(--accent-color);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 10px 25px;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn active">News & Updates <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="news.html" class="active"><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार
+                                (Latest News)</a>
+                            <a href="events.html"><i class="fa-solid fa-calendar-days"></i> आगामी कार्यक्रम (Upcoming
+                                Events)</a>
+                            <a href="announcements.html"><i class="fa-solid fa-bullhorn"></i> घोषणाएं
+                                (Announcements)</a>
+                            <a href="gallery.html"><i class="fa-solid fa-images"></i> फोटो गैलरी (Photo Gallery)</a>
+                        </div>
+                    </li>
+                    <li><a href="index.html#contact">संपर्क</a></li>
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                </ul>
+                <div class="hamburger">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार (Latest News)</h1>
+        <p>संघ की गतिविधियों और महत्वपूर्ण अपडेट्स</p>
+    </section>
+
+    <!-- News Content -->
+    <div class="news-container">
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-btn active">सभी समाचार</button>
+            <button class="filter-btn">आंदोलन</button>
+            <button class="filter-btn">सरकारी आदेश</button>
+            <button class="filter-btn">बैठक</button>
+            <button class="filter-btn">उपलब्धियां</button>
+        </div>
+
+        <!-- News Grid -->
+        <div class="news-grid">
+            <!-- News Card 1 - Urgent -->
+            <div class="news-card">
+                <div class="news-image">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-badge urgent">अत्यावश्यक</span>
+                    <h3 class="news-title">15 जनवरी को लखनऊ में विशाल धरना प्रदर्शन</h3>
+                    <p class="news-excerpt">
+                        सभी जिलों के संविदा कर्मचारियों से अपील है कि 15 जनवरी 2025 को लखनऊ में होने वाले विशाल धरना
+                        प्रदर्शन में बड़ी संख्या में शामिल हों। वेतन वृद्धि और नियमितीकरण की मांग को लेकर...
+                    </p>
+                    <div class="news-meta">
+                        <span class="news-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            28 दिसंबर 2025
+                        </span>
+                        <a href="#" class="read-more">
+                            पूरा पढ़ें <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Card 2 -->
+            <div class="news-card">
+                <div class="news-image">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-badge">बैठक</span>
+                    <h3 class="news-title">मुख्यमंत्री से वार्ता सफल, सकारात्मक परिणाम</h3>
+                    <p class="news-excerpt">
+                        संघ के प्रतिनिधिमंडल ने मुख्यमंत्री जी से मुलाकात की। संविदा कर्मचारियों की समस्याओं पर चर्चा
+                        हुई। मुख्यमंत्री जी ने सकारात्मक आश्वासन दिया है...
+                    </p>
+                    <div class="news-meta">
+                        <span class="news-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            25 दिसंबर 2025
+                        </span>
+                        <a href="#" class="read-more">
+                            पूरा पढ़ें <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Card 3 -->
+            <div class="news-card">
+                <div class="news-image">
+                    <i class="fa-solid fa-file-contract"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-badge">सरकारी आदेश</span>
+                    <h3 class="news-title">संविदा कर्मचारियों के लिए नई नियमावली जारी</h3>
+                    <p class="news-excerpt">
+                        उत्तर प्रदेश सरकार ने संविदा कर्मचारियों के लिए नई नियमावली जारी की है। इसमें वेतन, भत्ते और
+                        सेवा शर्तों में कई महत्वपूर्ण बदलाव किए गए हैं...
+                    </p>
+                    <div class="news-meta">
+                        <span class="news-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            20 दिसंबर 2025
+                        </span>
+                        <a href="#" class="read-more">
+                            पूरा पढ़ें <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Card 4 -->
+            <div class="news-card">
+                <div class="news-image">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-badge">उपलब्धि</span>
+                    <h3 class="news-title">5000 नए सदस्यों ने संघ में किया पंजीकरण</h3>
+                    <p class="news-excerpt">
+                        पिछले महीने में 5000 से अधिक संविदा कर्मचारियों ने संघ में अपना पंजीकरण कराया है। यह संघ की
+                        बढ़ती ताकत और विश्वसनीयता का प्रमाण है...
+                    </p>
+                    <div class="news-meta">
+                        <span class="news-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            15 दिसंबर 2025
+                        </span>
+                        <a href="#" class="read-more">
+                            पूरा पढ़ें <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Card 5 -->
+            <div class="news-card">
+                <div class="news-image">
+                    <i class="fa-solid fa-people-group"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-badge">आंदोलन</span>
+                    <h3 class="news-title">सभी जिलों में एक साथ प्रदर्शन का आयोजन</h3>
+                    <p class="news-excerpt">
+                        10 जनवरी को उत्तर प्रदेश के सभी 75 जिलों में एक साथ प्रदर्शन का आयोजन किया जाएगा। यह आंदोलन समान
+                        कार्य समान वेतन की मांग को लेकर होगा...
+                    </p>
+                    <div class="news-meta">
+                        <span class="news-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            10 दिसंबर 2025
+                        </span>
+                        <a href="#" class="read-more">
+                            पूरा पढ़ें <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Card 6 -->
+            <div class="news-card">
+                <div class="news-image">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="news-content">
+                    <span class="news-badge">प्रशिक्षण</span>
+                    <h3 class="news-title">संविदा कर्मचारियों के लिए निःशुल्क प्रशिक्षण कार्यक्रम</h3>
+                    <p class="news-excerpt">
+                        संघ द्वारा सभी संविदा कर्मचारियों के लिए कौशल विकास और अधिकार जागरूकता पर निःशुल्क प्रशिक्षण
+                        कार्यक्रम का आयोजन किया जा रहा है...
+                    </p>
+                    <div class="news-meta">
+                        <span class="news-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            5 दिसंबर 2025
+                        </span>
+                        <a href="#" class="read-more">
+                            पूरा पढ़ें <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container footer-content">
+            <div class="footer-about">
+                <h3>संपर्क करें (Contact Us)</h3>
+                <p><i class="fa-solid fa-location-dot"></i> Plot no 6 saty ghatt purana top khana balaganj lucknow up
+                    india</p>
+                <p><i class="fa-solid fa-phone"></i> +91 7355303056, 6389664078</p>
+                <p><i class="fa-solid fa-envelope"></i> <a href="mailto:uposkunion@gmail.com">uposkunion@gmail.com</a>
+                </p>
+                <p><i class="fa-solid fa-globe"></i> <a href="https://www.uposkunion.in"
+                        target="_blank">www.uposkunion.in</a></p>
+            </div>
+            <div class="social-links">
+                <a href="https://www.facebook.com/share/17XMgLe1G7/?mibextid=wwXIfr" target="_blank"><i
+                        class="fa-brands fa-facebook"></i></a>
+                <a href="https://x.com/uposkunion?s=21" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://www.instagram.com/uposkunion?igsh=MW84bjZ5cnIzYmh5eA%3D%3D&utm_source=qr"
+                    target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://youtube.com/@upsokunion?si=SfcILjXCZrTyeH9k" target="_blank"><i
+                        class="fa-brands fa-youtube"></i></a>
+                <a href="https://whatsapp.com/channel/0029Vb654IM2kNFwjtMRzj3O" target="_blank"><i
+                        class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 उत्तर प्रदेश आउटसोर्सिंग एवं संविदा कर्मचारी संघ. सर्वाधिकार सुरक्षित।</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

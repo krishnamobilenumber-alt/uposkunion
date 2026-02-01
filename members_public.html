@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सदस्य सूची - उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .profile-card-full {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 20px;
+        }
+
+        .profile-img-large {
+            width: 150px;
+            height: 180px;
+            object-fit: cover;
+            border: 3px solid #f1f1f1;
+            border-radius: 8px;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .details-table td:first-child {
+            font-weight: bold;
+            color: #555;
+            width: 40%;
+        }
+
+        .signature-box {
+            margin-top: 15px;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+        .signature-img {
+            height: 50px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo" onclick="location.href='index.html'" style="cursor:pointer;">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ</h1>
+                    <p>संगठित शक्ति, सुरक्षित भविष्य</p>
+                </div>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html">होम</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सेवाएं <i class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="advise.html">सलाह (Advise)</a>
+                            <a href="complaint.html">शिकायत (Complain)</a>
+                            <a href="donation.html">सहयोग (Donation)</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">News & Updates <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="news.html"><i class="fa-solid fa-newspaper"></i> ताज़ा समाचार (Latest News)</a>
+                            <a href="events.html"><i class="fa-solid fa-calendar-days"></i> आगामी कार्यक्रम (Upcoming
+                                Events)</a>
+                            <a href="announcements.html"><i class="fa-solid fa-bullhorn"></i> घोषणाएं
+                                (Announcements)</a>
+                            <a href="gallery.html"><i class="fa-solid fa-images"></i> फोटो गैलरी (Photo Gallery)</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact">संपर्क</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">सदस्य सूची <i
+                                class="fa-solid fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="members_public.html">सदस्य सूची (Member List)</a>
+                            <a href="presidents_public.html">जिला अध्यक्ष सूची (District President List)</a>
+                        </div>
+                    </li>
+
+                    <li><a href="registration.html" class="btn-primary">जुड़ें (रजिस्ट्रेशन)</a></li>
+                    <li><a href="login.html" class="btn-secondary">लॉगिन</a></li>
+                    <li><a href="#" class="btn-app-download"><i class="fa-solid fa-download"></i> ऐप डाउनलोड</a></li>
+                </ul>
+                <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section-padding">
+        <div class="container">
+            <h2 class="section-title">संगठित सदस्य सूची (Member List)</h2>
+            <div
+                style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <input type="text" id="memberSearch" placeholder="नाम या मोबाइल से खोजें..."
+                    style="padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+
+                <select id="districtFilter" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                    <option value="">सभी जनपद (All Districts)</option>
+                    <!-- Districts will be populated here -->
+                </select>
+
+                <select id="deptFilter" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                    <option value="">सभी विभाग (All Departments)</option>
+                    <!-- Departments will be populated here -->
+                </select>
+
+                <select id="postFilter" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                    <option value="">सभी पद (All Posts)</option>
+                    <!-- Posts will be populated here -->
+                </select>
+            </div>
+            <div id="membersListGrid" class="cards-grid">
+                <!-- Members will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Profile Viewer Modal -->
+    <div id="profileViewer" class="profile-viewer">
+        <div class="profile-card-full">
+            <span class="close-btn" onclick="closeProfile()">&times;</span>
+            <div id="profileContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const districts = [
+            "Agra (आगरा)", "Aligarh (अलीगढ़)", "Ambedkar Nagar (अम्बेडकर नगर)", "Amethi (अमेठी)", "Amroha (अमरोहा)",
+            "Auraiya (औरैया)", "Ayodhya (अयोध्या)", "Azamgarh (आजमगढ़)", "Baghpat (बागपत)", "Bahraich (बहराइच)",
+            "Ballia (बलिया)", "Balrampur (बलरामपुर)", "Banda (बांदा)", "Barabanki (बाराबंकी)", "Bareilly (बरेली)",
+            "Basti (बस्ती)", "Bhadohi (भदोही)", "Bijnor (बिजनौर)", "Budaun (बदायूं)", "Bulandshahr (बुलंदशहर)",
+            "Chandauli (चंदौली)", "Chitrakoot (चित्रकूट)", "Deoria (देवरिया)", "Etah (एटा)", "Etawah (इटावा)",
+            "Farrukhabad (फर्रुखाबाद)", "Fatehpur (फतेहपुर)", "Firozabad (फिरोजाबाद)", "Gautam Buddha Nagar (गौतम बुद्ध नगर)",
+            "Ghaziabad (गाजियाबाद)", "Ghazipur (गाजीपुर)", "Gonda (गोंडा)", "Gorakhpur (गोरखपुर)", "Hamirpur (हमीरपुर)",
+            "Hapur (हापुड़)", "Hardoi (हरदोई)", "Hathras (हाथरस)", "Jalaun (जालौन)", "Jaunpur (जौनपुर)", "Jhansi (झांसी)",
+            "Kannauj (कन्नौज)", "Kanpur Dehat (कानपुर देहात)", "Kanpur Nagar (कानपुर नगर)", "Kasganj (कासगंज)",
+            "Kaushambi (कौशाम्बी)", "Kushinagar (कुशीनगर)", "Lakhimpur Kheri (लखीमपुर खीरी)", "Lalitpur (लalitpur)",
+            "Lucknow (लखनऊ)", "Maharajganj (महराजगंज)", "Mahoba (महोबा)", "Mainpuri (मैनपुरी)", "Mathura (मथुरा)",
+            "Mau (मऊ)", "Meerut (मेरठ)", "Mirzapur (मिर्जापुर)", "Moradabad (मुरादाबाद)", "Muzaffarnagar (मुजफ्फरनगर)",
+            "Pilibhit (पीलीभीत)", "Pratapgarh (प्रतापगढ़)", "Prayagraj (प्रयागराज)", "Raebareli (रायबरेली)",
+            "Rampur (रामपुर)", "Saharanpur (सहारनपुर)", "Sambhal (संभल)", "Sant Kabir Nagar (संत कबीर नगर)",
+            "Shahjahanpur (शाहजहांपुर)", "Shamli (शामली)", "Shravasti (श्रावस्ती)", "Siddharthnagar (सिद्धार्थनगर)",
+            "Sitapur (सीतापुर)", "Sonbhadra (सोनभद्र)", "Sultanpur (सुल्तानपुर)", "Unnao (उन्नाव)", "Varanasi (वाराणसी)"
+        ];
+
+        const depts = [
+            "Medical Health (चिकित्सा एवं स्वास्थ्य)", "Basic Education (बेसिक शिक्षा)", "Secondary Education (माध्यमिक शिक्षा)",
+            "Police (पुलिस विभाग)", "Transport (परिवहन निगम)", "Electricity (विद्युत विभाग)", "Nagar Nigam (नगर निगम/पालिका)",
+            "PWD (लोक निर्माण विभाग)", "Irrigation (सिंचाई विभाग)", "Revenue (राजस्व विभाग)", "Social Welfare (समाज कल्याण)",
+            "Agriculture (कृषि विभाग)", "Panchayati Raj (पंचायती राज)", "Rural Development (ग्राम्य विकास)", "Other (अन्य)"
+        ];
+
+        const posts = [
+            "Computer Operator (कंप्यूटर ऑपरेटर)", "Data Entry Operator (डाटा एंट्री ऑपरेटर)", "Junior Assistant (कनिष्ठ सहायक)",
+            "Driver (वाहन चालक)", "Conductor (परिचालक)", "Peon (चपरासी)", "Sweeper (सफाई कर्मचारी)", "Ward Boy (वार्ड बॉय)",
+            "Nurse (नर्स)", "Lab Technician (लैब टेक्नीशियन)", "Electrician (इलेक्ट्रीशियन)", "Lineman (लाइनमैन)",
+            "Meter Reader (मीटर रीडर)", "Security Guard (सुरक्षा गार्ड)", "Helper (हेल्पर)", "Supervisor (सुपरवाइजर)", "Other (अन्य)"
+        ];
+
+        function populateFilters() {
+            const dSelect = document.getElementById('districtFilter');
+            const deptSelect = document.getElementById('deptFilter');
+            const postSelect = document.getElementById('postFilter');
+
+            districts.forEach(d => { dSelect.innerHTML += `<option value="${d}">${d}</option>`; });
+            depts.forEach(d => { deptSelect.innerHTML += `<option value="${d}">${d}</option>`; });
+            posts.forEach(p => { postSelect.innerHTML += `<option value="${p}">${p}</option>`; });
+        }
+
+        function loadMembers() {
+            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const grid = document.getElementById('membersListGrid');
+
+            const searchTerm = document.getElementById('memberSearch').value.toLowerCase();
+            const districtTerm = document.getElementById('districtFilter').value;
+            const deptTerm = document.getElementById('deptFilter').value;
+            const postTerm = document.getElementById('postFilter').value;
+
+            grid.innerHTML = '';
+
+            const filteredMembers = members.filter(m => {
+                const isApproved = m.status === 'Approved';
+                const matchesSearch = !searchTerm || m.name.toLowerCase().includes(searchTerm) || (m.mobile && m.mobile.includes(searchTerm));
+                const matchesDistrict = !districtTerm || m.workDistrict === districtTerm || m.homeDistrict === districtTerm;
+                const matchesDept = !deptTerm || m.department === deptTerm;
+                const matchesPost = !postTerm || m.post === postTerm;
+
+                return isApproved && matchesSearch && matchesDistrict && matchesDept && matchesPost;
+            });
+
+            if (filteredMembers.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">कोई सदस्य नहीं मिला।</p>';
+                return;
+            }
+
+            filteredMembers.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'card profile-card';
+                card.style.textAlign = 'center';
+                card.innerHTML = `
+                    <div style="position: relative;">
+                        <img src="${m.photo || 'https://via.placeholder.com/150'}" class="profile-img" style="width:100px; height:100px; border-radius:50%; margin: 0 auto 10px; object-fit: cover;">
+                    </div>
+                    <h3>${m.name}</h3>
+                    <p style="color: var(--secondary-color); font-weight: 600;">${m.post || 'सदस्य'}</p>
+                    <p><i class="fa-solid fa-location-dot"></i> ${m.workDistrict || 'UP'}</p>
+                    <button onclick="viewProfile(${m.id}, 'member')" class="btn btn-sm" style="margin-top:10px; background: var(--accent-color); color:#fff; border:none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">विवरण देखें</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.viewProfile = function (id, type) {
+            const data = type === 'member'
+                ? JSON.parse(localStorage.getItem('up_sangh_members')) || []
+                : JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+
+            const p = data.find(x => x.id === id);
+            if (!p) return;
+
+            const modal = document.getElementById('profileViewer');
+            const content = document.getElementById('profileContent');
+
+            content.innerHTML = `
+                <div class="profile-grid">
+                    <div>
+                        <img src="${p.photo || 'https://via.placeholder.com/150'}" class="profile-img-large">
+                    </div>
+                    <div>
+                        <h2 style="margin-bottom:5px; color:#2c3e50;">${p.name}</h2>
+                        <p style="color:#e67e22; font-weight:bold;">${p.post || (type === 'member' ? 'सदस्य' : p.role)}</p>
+                        <table class="details-table">
+                            <tr><td>विभाग:</td><td>${p.department || p.vibhag || '--'}</td></tr>
+                            <tr><td>कार्यस्थल जिला:</td><td>${p.workDistrict || p.district || '--'}</td></tr>
+                            <tr><td>गृह जनपद:</td><td>${p.homeDistrict || '--'}</td></tr>
+                            <tr><td>मोबाइल:</td><td>${p.mobile || '********'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        };
+
+        window.closeProfile = function () {
+            document.getElementById('profileViewer').style.display = 'none';
+        };
+
+        // Event Listeners
+        document.getElementById('memberSearch').addEventListener('input', loadMembers);
+        document.getElementById('districtFilter').addEventListener('change', loadMembers);
+        document.getElementById('deptFilter').addEventListener('change', loadMembers);
+        document.getElementById('postFilter').addEventListener('change', loadMembers);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateFilters();
+            loadMembers();
+        });
+    </script>
+</body>
+
+</html>
