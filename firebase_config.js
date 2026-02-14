@@ -4,7 +4,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyCUlZWKLcyvdOA1aaGZIMD4X4-UxlcSNv8",
     authDomain: "up-sangh-union.firebaseapp.com",
-    databaseURL: "https://up-sangh-union-default-rtdb.firebaseio.com",
+    databaseURL: "https://up-sangh-union-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "up-sangh-union",
     storageBucket: "up-sangh-union.firebasestorage.app",
     messagingSenderId: "622818555224",
