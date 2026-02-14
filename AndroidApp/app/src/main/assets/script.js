@@ -526,13 +526,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             throw new Error("Database connection not established. Please refresh the page.");
                         }
 
+                        console.log("DB Object:", window.db);
+                        console.log("DB ref test:", window.db.ref("members"));
+                        console.log("Attempting RTDB push...");
+
                         // Race Condition: Timeout if DB takes too long (e.g., bad network)
                         const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error("Connection Timeout: Server is not responding. Check your internet.")), 15000)
                         );
 
+                        const pushRef = window.db.ref("members").push();
+                        console.log("Push ref created:", pushRef.key);
+
                         await Promise.race([
-                            window.db.ref("members").push(memberData),
+                            pushRef.set(memberData).then(() => {
+                                console.log("RTDB push SUCCESS");
+                            }).catch(err => {
+                                console.error("RTDB push FAILED:", err);
+                                throw err;
+                            }),
                             timeoutPromise
                         ]);
 
