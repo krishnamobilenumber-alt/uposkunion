@@ -1494,12 +1494,19 @@
         }
 
         // Real-time Listeners for Admin Dashboard (RTDB)
+        console.log("window.db exists:", !!window.db);
+        console.log("window.db type:", typeof window.db);
         if (window.db) {
+            console.log("Setting up RTDB listeners...");
             // Members Sync
             window.db.ref("members").on("value", snapshot => {
+                console.log("Members listener fired! exists:", snapshot.exists(), "numChildren:", snapshot.numChildren());
                 window.allMembers = snapshotToArray(snapshot);
+                console.log("allMembers count:", window.allMembers.length);
                 if (window.loadDashboardData) window.loadDashboardData();
                 if (window.loadIDCardsFeesData) window.loadIDCardsFeesData();
+            }, error => {
+                console.error("Members listener ERROR:", error);
             });
 
             // Officers Sync
