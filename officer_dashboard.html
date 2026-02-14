@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Firebase SDKs (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <style>
         /* Global & Reset */
@@ -1077,11 +1077,11 @@
             // --- REAL-TIME LISTENERS (Added for Sync) ---
             if (window.db) {
                 // Members
-                window.db.collection("members").onSnapshot(snapshot => {
+                window.db.ref('members').on('value', snapshot => {
                     const members = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         members.push(d);
                     });
                     localStorage.setItem("up_sangh_members", JSON.stringify(members));
@@ -1091,11 +1091,11 @@
                 });
 
                 // Requests
-                window.db.collection("requests").onSnapshot(snapshot => {
+                window.db.ref('requests').on('value', snapshot => {
                     const reqs = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         reqs.push(d);
                     });
                     localStorage.setItem("up_sangh_requests", JSON.stringify(reqs));
@@ -1103,11 +1103,11 @@
                 });
 
                 // Notices
-                window.db.collection("notices").onSnapshot(snapshot => {
+                window.db.ref('notices').on('value', snapshot => {
                     const notices = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         notices.push(d);
                     });
                     localStorage.setItem("up_sangh_notices", JSON.stringify(notices));
@@ -1115,11 +1115,11 @@
                 });
 
                 // Documents (for Downloads)
-                window.db.collection("documents").onSnapshot(snapshot => {
+                window.db.ref('documents').on('value', snapshot => {
                     const docs = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         docs.push(d);
                     });
                     localStorage.setItem("up_sangh_docs", JSON.stringify(docs));
@@ -1362,9 +1362,9 @@
                         if (confirm(`Process ${req.type} for ${req.name}?\nPlan: ${plan} (₹${amt})\nMobile: ${req.mobile}${payInfo}\n\nClick OK to APPROVE.`)) {
 
                             // Find Member in Cloud
-                            const memQS = await window.db.collection('members').where('mobile', '==', req.mobile).get();
+                            const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
 
-                            if (!memQS.empty) {
+                            if (!mem!qs.exists()) {
                                 const mDoc = memQS.docs[0];
                                 const updates = {
                                     fee_status: 'Paid',
@@ -1389,9 +1389,9 @@
                                 await mDoc.ref.update(updates);
 
                                 // Update Request
-                                const reqQS = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                                if (!reqQS.empty) {
-                                    reqQS.docs[0].ref.update({ status: 'Approved', newExpiry: '31 Dec 2026' });
+                                const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                                if (!req!qs.exists()) {
+                                    reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved', newExpiry: '31 Dec 2026' });
                                 }
 
                                 alert('Renewal Approved! (Cloud Synced)');
@@ -1410,8 +1410,8 @@
                     if (c.post) changeList.push(`Post: ${c.post}`);
 
                     if (confirm(`Approve profile updates for ${req.name}?\n\n${changeList.join('\n')}`)) {
-                        const memQS = await window.db.collection('members').where('mobile', '==', req.mobile).get();
-                        if (!memQS.empty) {
+                        const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
+                        if (!mem!qs.exists()) {
                             const mDoc = memQS.docs[0];
                             const updates = {};
 
@@ -1438,8 +1438,8 @@
 
                             await mDoc.ref.update(updates);
 
-                            const reqQS = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                            if (!reqQS.empty) reqQS.docs[0].ref.update({ status: 'Approved' });
+                            const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                            if (!req!qs.exists()) reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
 
                             alert('Request Approved! Member profile updated (Cloud).');
                         } else {
@@ -1447,9 +1447,9 @@
                         }
 
                     } else if (confirm("Do you want to REJECT this request?")) {
-                        const reqQS = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                        if (!reqQS.empty) {
-                            reqQS.docs[0].ref.update({ status: 'Rejected' }).then(() => alert("Request Rejected (Cloud)."));
+                        const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                        if (!req!qs.exists()) {
+                            reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected (Cloud)."));
                         }
                     }
                 } catch (err) {
@@ -1477,13 +1477,13 @@
                         }
                     } catch (e) { }
 
-                    window.db.collection('members').doc(m.firestoreId).update(updates)
+                    window.db.ref('members/' + m.firestoreId).update(updates)
                         .then(() => alert("Member Approved (Cloud)"));
                 } else {
                     // Fallback query
-                    const qs = await window.db.collection('members').where('id', '==', id).get();
-                    if (!qs.empty) {
-                        qs.docs[0].ref.update({ status: 'Approved' }).then(() => alert("Member Approved (Cloud Query)"));
+                    const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) {
+                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' }).then(() => alert("Member Approved (Cloud Query)"));
                     } else {
                         alert("Member not found in Cloud.");
                     }
@@ -1496,12 +1496,12 @@
                 const m = members.find(x => x.id === id);
 
                 if (m && m.firestoreId) {
-                    window.db.collection('members').doc(m.firestoreId).update({ status: 'Rejected' })
+                    window.db.ref('members/' + m.firestoreId).update({ status: 'Rejected' })
                         .then(() => alert("Member Rejected (Cloud)"));
                 } else {
-                    const qs = await window.db.collection('members').where('id', '==', id).get();
-                    if (!qs.empty) {
-                        qs.docs[0].ref.update({ status: 'Rejected' }).then(() => alert("Member Rejected (Cloud Query)"));
+                    const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) {
+                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Member Rejected (Cloud Query)"));
                     } else {
                         alert("Member not found in Cloud.");
                     }

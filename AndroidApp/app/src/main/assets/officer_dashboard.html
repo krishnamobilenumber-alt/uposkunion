@@ -11,6 +11,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
     <style>
         /* Global & Reset */
         body {
@@ -1070,6 +1074,59 @@
             const myDist = officer.district;
             const myDiv = officer.division;
 
+            // --- REAL-TIME LISTENERS (Added for Sync) ---
+            if (window.db) {
+                // Members
+                window.db.ref('members').on('value', snapshot => {
+                    const members = [];
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
+                        members.push(d);
+                    });
+                    localStorage.setItem("up_sangh_members", JSON.stringify(members));
+                    // Reload current section if needed
+                    const activeSec = localStorage.getItem('up_sangh_active_section_officer') || 'dashboard';
+                    showSection(activeSec);
+                });
+
+                // Requests
+                window.db.ref('requests').on('value', snapshot => {
+                    const reqs = [];
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
+                        reqs.push(d);
+                    });
+                    localStorage.setItem("up_sangh_requests", JSON.stringify(reqs));
+                    if (document.getElementById('section-applications').classList.contains('active')) showSection('applications');
+                });
+
+                // Notices
+                window.db.ref('notices').on('value', snapshot => {
+                    const notices = [];
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
+                        notices.push(d);
+                    });
+                    localStorage.setItem("up_sangh_notices", JSON.stringify(notices));
+                    if (document.getElementById('section-notices').classList.contains('active')) showSection('notices');
+                });
+
+                // Documents (for Downloads)
+                window.db.ref('documents').on('value', snapshot => {
+                    const docs = [];
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
+                        docs.push(d);
+                    });
+                    localStorage.setItem("up_sangh_docs", JSON.stringify(docs));
+                    if (document.getElementById('section-downloads').classList.contains('active')) showSection('downloads');
+                });
+            }
+
             // --- 1. APPLY THEME & CLASSES ---
             if (role === 'District Admin') {
                 document.body.classList.add('theme-district');
@@ -1288,8 +1345,8 @@
                 }
             }
 
-            // --- PROCESS REQUEST FUNCTION ---
-            window.processRequest = function (reqId) {
+            // --- PROCESS REQUEST FUNCTION (Cloud Refactor) ---
+            window.processRequest = async function (reqId) {
                 try {
                     const requests = JSON.parse(localStorage.getItem('up_sangh_requests')) || [];
                     const req = requests.find(r => r.reqId === reqId);
@@ -1299,157 +1356,155 @@
                         const plan = req.membership_plan || 'Yearly';
                         const amt = req.amount || 299;
                         const payInfo = req.payment_status === 'Payment Sent'
-                            ? `\n\n[Member has confirmed they SENT the ₹${amt} payment for ${plan} membership. Please verify in your bank account before approving.]`
-                            : `\n\n[WARNING: ₹${amt} payment NOT yet confirmed by Member.]`;
+                            ? `\n\n[Member has confirmed they SENT the ₹${amt} payment. Please verify.]`
+                            : `\n\n[WARNING: Payment NOT confirmed.]`;
 
                         if (confirm(`Process ${req.type} for ${req.name}?\nPlan: ${plan} (₹${amt})\nMobile: ${req.mobile}${payInfo}\n\nClick OK to APPROVE.`)) {
-                            let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                            const reqMobile = req.mobile.toString().trim();
-                            const mIdx = members.findIndex(m => m.mobile && m.mobile.toString().trim() === reqMobile);
 
-                            if (mIdx !== -1) {
-                                members[mIdx].fee_status = 'Paid';
-                                members[mIdx].membership_plan = plan;
-                                members[mIdx].membership_amount = amt;
+                            // Find Member in Cloud
+                            const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
 
-                                if (plan === 'Lifetime') {
-                                    members[mIdx].valid_till = 'Lifetime';
-                                } else {
-                                    members[mIdx].valid_till = '31 Dec 2026';
-                                }
+                            if (!mem!qs.exists()) {
+                                const mDoc = memQS.docs[0];
+                                const updates = {
+                                    fee_status: 'Paid',
+                                    membership_plan: plan,
+                                    membership_amount: amt,
+                                    valid_till: (plan === 'Lifetime' ? 'Lifetime' : '31 Dec 2026')
+                                };
 
                                 if (req.type === 'Initial Fee Payment') {
-                                    members[mIdx].status = 'Approved';
-                                    members[mIdx].payment_date = new Date().toISOString();
-
-                                    // TRACK APPROVAL
-                                    try {
-                                        const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
-                                        if (curOfficer) {
-                                            members[mIdx].approved_by = curOfficer.name;
-                                            members[mIdx].approved_role = curOfficer.role;
-                                            const loc = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
-                                            members[mIdx].approved_location = loc;
-                                            members[mIdx].approved_date = new Date().toLocaleDateString('en-GB');
-                                        }
-                                    } catch (e) { console.error("Error saving approval metadata", e); }
+                                    updates.status = 'Approved';
+                                    updates.payment_date = new Date().toISOString();
+                                    // Approval Metadata
+                                    const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
+                                    if (curOfficer) {
+                                        updates.approved_by = curOfficer.name;
+                                        updates.approved_role = curOfficer.role;
+                                        updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
+                                        updates.approved_date = new Date().toLocaleDateString('en-GB');
+                                    }
                                 }
-                                localStorage.setItem('up_sangh_members', JSON.stringify(members));
 
-                                // Close Request
-                                const rIdx = requests.findIndex(r => r.reqId === reqId);
-                                requests[rIdx].status = 'Approved';
-                                requests[rIdx].newExpiry = '31 Dec 2026';
-                                localStorage.setItem('up_sangh_requests', JSON.stringify(requests));
+                                await mDoc.ref.update(updates);
 
-                                alert('Renewal Approved! Membership valid till 31 Dec 2026.');
-                                location.reload();
+                                // Update Request
+                                const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                                if (!req!qs.exists()) {
+                                    reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved', newExpiry: '31 Dec 2026' });
+                                }
+
+                                alert('Renewal Approved! (Cloud Synced)');
                             } else {
-                                alert("Member not found.");
+                                alert("Member not found in Cloud database.");
                             }
                         }
-                        return; // Exit after renewal logic
+                        return;
                     }
 
-                    // Otherwise, Handle Profile Update (Default)
+                    // Profile Update
                     const c = req.changes;
                     const changeList = [];
                     if (c.name) changeList.push(`Name: ${req.name} -> ${c.name}`);
                     if (c.father_name) changeList.push(`Father: ${c.father_name}`);
                     if (c.post) changeList.push(`Post: ${c.post}`);
 
-                    if (confirm(`Approve profile updates for ${req.name}?\n\n${changeList.join('\n')}\n\n(Photos/Signatures will also be updated)`)) {
-                        // APPROVE
-                        let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                        const reqMobile = req.mobile.toString().trim();
-                        const mIdx = members.findIndex(m => m.mobile && m.mobile.toString().trim() === reqMobile);
+                    if (confirm(`Approve profile updates for ${req.name}?\n\n${changeList.join('\n')}`)) {
+                        const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
+                        if (!mem!qs.exists()) {
+                            const mDoc = memQS.docs[0];
+                            const updates = {};
 
-                        if (mIdx !== -1) {
-                            const m = members[mIdx];
-                            // Apply all fields from changes
                             Object.keys(c).forEach(key => {
                                 if (c[key] !== undefined && c[key] !== null) {
-                                    m[key] = c[key];
-                                    if (key === 'father_name') m.fatherName = c[key];
-                                    if (key === 'home_address') m.homeAddress = c[key];
-                                    if (key === 'home_district') m.homeDistrict = c[key];
-                                    if (key === 'work_district') m.workDistrict = c[key];
+                                    let tKey = key;
+                                    if (key === 'father_name') tKey = 'fatherName';
+                                    if (key === 'home_address') tKey = 'homeAddress';
+                                    if (key === 'home_district') tKey = 'homeDistrict';
+                                    if (key === 'work_district') tKey = 'workDistrict';
+                                    updates[tKey] = c[key];
                                 }
                             });
+                            updates.status = 'Approved';
 
-                            m.status = 'Approved';
+                            // Approval Metadata
+                            const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
+                            if (curOfficer) {
+                                updates.approved_by = curOfficer.name;
+                                updates.approved_role = curOfficer.role;
+                                updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
+                                updates.approved_date = new Date().toLocaleDateString('en-GB');
+                            }
 
-                            // TRACK APPROVAL
-                            try {
-                                const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
-                                if (curOfficer) {
-                                    m.approved_by = curOfficer.name;
-                                    m.approved_role = curOfficer.role;
-                                    const loc = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
-                                    m.approved_location = loc;
-                                    m.approved_date = new Date().toLocaleDateString('en-GB');
-                                }
-                            } catch (e) { console.error("Error saving approval metadata", e); }
-                            localStorage.setItem('up_sangh_members', JSON.stringify(members));
+                            await mDoc.ref.update(updates);
 
-                            // Close Request
-                            const rIdx = requests.findIndex(r => r.reqId === reqId);
-                            requests[rIdx].status = 'Approved';
-                            localStorage.setItem('up_sangh_requests', JSON.stringify(requests));
+                            const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                            if (!req!qs.exists()) reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
 
-                            alert('Request Approved! Member profile updated.');
-                            location.reload();
+                            alert('Request Approved! Member profile updated (Cloud).');
                         } else {
-                            alert("Error: Member with mobile " + reqMobile + " not found in the database.");
+                            alert("Member not found in Cloud.");
                         }
+
                     } else if (confirm("Do you want to REJECT this request?")) {
-                        const rIdx = requests.findIndex(r => r.reqId === reqId);
-                        if (rIdx !== -1) {
-                            requests[rIdx].status = 'Rejected';
-                            localStorage.setItem('up_sangh_requests', JSON.stringify(requests));
-                            alert('Request Rejected.');
-                            location.reload();
+                        const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                        if (!req!qs.exists()) {
+                            reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected (Cloud)."));
                         }
                     }
                 } catch (err) {
                     console.error("Process Request Error:", err);
-                    alert("Critical Error: " + err.message);
+                    alert("Error: " + err.message);
                 }
             };
 
-            window.verifyMemberDirect = function (id) {
+            window.verifyMemberDirect = async function (id) {
                 if (!confirm("Approve this member?")) return;
-                let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                const mIdx = members.findIndex(m => m.id === id);
-                if (mIdx !== -1) {
-                    members[mIdx].status = 'Approved';
-                    // TRACK APPROVAL
+
+                const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+                const m = members.find(x => x.id === id);
+
+                if (m && m.firestoreId) {
+                    const updates = { status: 'Approved' };
+                    // Metadata
                     try {
                         const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
                         if (curOfficer) {
-                            members[mIdx].approved_by = curOfficer.name;
-                            members[mIdx].approved_role = curOfficer.role;
-                            const loc = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
-                            members[mIdx].approved_location = loc;
-                            members[mIdx].approved_date = new Date().toLocaleDateString('en-GB');
+                            updates.approved_by = curOfficer.name;
+                            updates.approved_role = curOfficer.role;
+                            updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
+                            updates.approved_date = new Date().toLocaleDateString('en-GB');
                         }
-                    } catch (e) { console.error("Error saving approval metadata", e); }
+                    } catch (e) { }
 
-                    localStorage.setItem('up_sangh_members', JSON.stringify(members));
-                    alert("Member Approved Successfully!");
-                    location.reload();
+                    window.db.ref('members/' + m.firestoreId).update(updates)
+                        .then(() => alert("Member Approved (Cloud)"));
+                } else {
+                    // Fallback query
+                    const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) {
+                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' }).then(() => alert("Member Approved (Cloud Query)"));
+                    } else {
+                        alert("Member not found in Cloud.");
+                    }
                 }
             };
 
-            window.rejectMemberDirect = function (id) {
+            window.rejectMemberDirect = async function (id) {
                 if (!confirm("Reject this member?")) return;
-                let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                const mIdx = members.findIndex(m => m.id === id);
-                if (mIdx !== -1) {
-                    members[mIdx].status = 'Rejected';
-                    localStorage.setItem('up_sangh_members', JSON.stringify(members));
-                    alert("Member Rejected.");
-                    location.reload();
+                const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+                const m = members.find(x => x.id === id);
+
+                if (m && m.firestoreId) {
+                    window.db.ref('members/' + m.firestoreId).update({ status: 'Rejected' })
+                        .then(() => alert("Member Rejected (Cloud)"));
+                } else {
+                    const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) {
+                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Member Rejected (Cloud Query)"));
+                    } else {
+                        alert("Member not found in Cloud.");
+                    }
                 }
             };
 

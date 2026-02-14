@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         membership_plan: membershipPlan,
                         membership_amount: membershipAmount,
                         date: new Date().toLocaleDateString('hi-IN'), // Display String
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp() // Server Timestamp for sorting
+                        createdAt: firebase.database.ServerValue.TIMESTAMP // Server Timestamp for sorting
                     };
 
                     // Show loading state
@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
                         console.log(`Payload Size: ${sizeInMB} MB`);
 
-                        if (sizeInBytes > 950000) { // Safety buffer for Firestore 1MB limit
+                        if (sizeInBytes > 950000) { // Safety buffer for data size limit
                             alert(`Error: Data too large (${sizeInMB} MB). Please use smaller photos.\nMax allowed is ~0.9 MB.`);
                             if (submitBtn) {
                                 submitBtn.innerText = "रजिस्टर करें";
@@ -520,23 +520,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             return;
                         }
 
-                        // Save to Firestore 'members' collection
+                        // Save to Realtime Database 'members' node
                         // Ensure db is defined
                         if (!window.db) {
                             throw new Error("Database connection not established. Please refresh the page.");
                         }
 
-                        // Race Condition: Timeout if Firestore takes too long (e.g., bad network)
+                        // Race Condition: Timeout if DB takes too long (e.g., bad network)
                         const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error("Connection Timeout: Server is not responding. Check your internet.")), 15000)
                         );
 
                         await Promise.race([
-                            window.db.collection("members").add(memberData),
+                            window.db.ref("members").push(memberData),
                             timeoutPromise
                         ]);
 
-                        console.log("Document written successfully");
+                        console.log("Data written to Realtime Database successfully");
 
                         // Use Custom Modal
                         const modal = document.getElementById('successModal');
@@ -586,25 +586,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const loginBtn = memberForm.querySelector('button');
                 if (loginBtn) loginBtn.innerText = "Checking...";
 
-                // Query Firestore for member with matching mobile
-                db.collection("members").where("mobile", "==", mobile).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
+                // Query Realtime Database for member with matching mobile
+                db.ref("members").orderByChild("mobile").equalTo(mobile).once("value")
+                    .then((snapshot) => {
+                        if (!snapshot.exists()) {
                             alert('मोबाइल नंबर पंजीकृत नहीं है ');
                             if (loginBtn) loginBtn.innerText = "Login";
                             return;
                         }
 
                         let found = false;
-                        querySnapshot.forEach((doc) => {
-                            const member = doc.data();
+                        snapshot.forEach((childSnap) => {
+                            const member = childSnap.val();
+                            member.firestoreId = childSnap.key; // Save key as ID
                             // Check password (in real app, use hashing!)
                             if (member.password === pass) {
                                 found = true;
                                 // Save minimal session info to LocalStorage (ok for session state)
                                 // But we load actual data from DB on dashboard
                                 localStorage.setItem('up_sangh_current_member', JSON.stringify(member)); // Keep this for session mgmt for now
-                                localStorage.setItem('up_sangh_member_doc_id', doc.id); // Save Doc ID for updates
+                                localStorage.setItem('up_sangh_member_doc_id', childSnap.key); // Save key for updates
 
                                 alert('लॉगिन सफल (Login Successful)!');
                                 window.location.replace('member_dashboard.html');
@@ -617,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     })
                     .catch((error) => {
-                        console.log("Error getting documents: ", error);
+                        console.log("Error getting data: ", error);
                         alert("Login Error: " + error.message);
                         if (loginBtn) loginBtn.innerText = "Login";
                     });
@@ -696,22 +697,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btn) btn.innerText = "Admin Login...";
                 setTimeout(() => window.location.replace('admin_dashboard.html'), 500);
             }
-            // 2. Check OFFICERS (Firestore)
+            // 2. Check OFFICERS (Realtime Database)
             else {
                 if (btn) btn.innerText = "Verifying...";
 
-                db.collection("officers").where("mobile", "==", user).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
+                db.ref("officers").orderByChild("mobile").equalTo(user).once("value")
+                    .then((snapshot) => {
+                        if (!snapshot.exists()) {
                             alert('गलत यूज़रनेम या पासवर्ड (Invalid Credentials)');
                             if (btn) btn.innerText = "Login";
                             return;
                         }
 
                         let found = false;
-                        querySnapshot.forEach((doc) => {
-                            const officer = doc.data();
-                            officer.firestoreId = doc.id; // Save ID
+                        snapshot.forEach((childSnap) => {
+                            const officer = childSnap.val();
+                            officer.firestoreId = childSnap.key; // Save key as ID
 
                             if (officer.password === pass) {
                                 found = true;

@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <style>
         /* Dashboard Layout */
@@ -473,7 +473,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Firebase SDKs (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1458,7 +1458,7 @@
         </main>
     </div>
 
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=4.1"></script>
     <script>
         // --- GLOBAL DATA VARIABLES (In-Memory) ---
         window.allMembers = [];
@@ -1474,8 +1474,8 @@
         if (!firebase.apps.length) {
             firebase.initializeApp(window.firebaseConfig);
         }
-        window.db = firebase.firestore();
-        console.log("Firebase Admin Initialized");
+        window.db = firebase.database();
+        console.log("Firebase Admin RTDB Initialized");
 
         // Clear Bloated LocalStorage (Fix Quota Issue)
         try {
@@ -1486,94 +1486,65 @@
             console.warn("Error clearing LocalStorage:", e);
         }
 
-        // Real-time Listeners for Admin Dashboard
+        // Helper: Convert RTDB snapshot to array with keys
+        function snapshotToArray(snapshot) {
+            const arr = [];
+            snapshot.forEach(child => {
+                const data = child.val();
+                data.firestoreId = child.key;
+                arr.push(data);
+            });
+            return arr;
+        }
+
+        // Real-time Listeners for Admin Dashboard (RTDB)
         if (window.db) {
             // Members Sync
-            window.db.collection("members").onSnapshot(snapshot => {
-                window.allMembers = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.firestoreId = doc.id;
-                    window.allMembers.push(data);
-                });
-
+            window.db.ref("members").on("value", snapshot => {
+                window.allMembers = snapshotToArray(snapshot);
                 if (window.loadDashboardData) window.loadDashboardData();
                 if (window.loadIDCardsFeesData) window.loadIDCardsFeesData();
             });
 
             // Officers Sync
-            window.db.collection("officers").onSnapshot(snapshot => {
-                window.allOfficers = [];
-                snapshot.forEach(doc => window.allOfficers.push(doc.data()));
-
+            window.db.ref("officers").on("value", snapshot => {
+                window.allOfficers = snapshotToArray(snapshot);
                 if (window.loadDashboardData) window.loadDashboardData();
             });
 
             // Issues Sync
-            window.db.collection("issues").onSnapshot(snapshot => {
-                window.allIssues = [];
-                snapshot.forEach(doc => window.allIssues.push(doc.data()));
-
+            window.db.ref("issues").on("value", snapshot => {
+                window.allIssues = snapshotToArray(snapshot);
                 if (window.loadDashboardData) window.loadDashboardData();
             });
 
             // Requests Sync
-            window.db.collection("requests").onSnapshot(snapshot => {
-                window.allRequests = [];
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.firestoreId = doc.id;
-                    window.allRequests.push(d);
-                });
-
+            window.db.ref("requests").on("value", snapshot => {
+                window.allRequests = snapshotToArray(snapshot);
                 if (window.loadDashboardData) window.loadDashboardData();
             });
 
             // Notices Sync
-            window.db.collection("notices").onSnapshot(snapshot => {
-                window.allNotices = [];
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.firestoreId = doc.id;
-                    window.allNotices.push(d);
-                });
-
+            window.db.ref("notices").on("value", snapshot => {
+                window.allNotices = snapshotToArray(snapshot);
                 if (window.loadNoticesData) window.loadNoticesData();
             });
 
             // Media Sync
-            window.db.collection("media").onSnapshot(snapshot => {
-                window.allMedia = [];
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.firestoreId = doc.id;
-                    window.allMedia.push(d);
-                });
-
+            window.db.ref("media").on("value", snapshot => {
+                window.allMedia = snapshotToArray(snapshot);
                 if (window.loadMediaGallery) window.loadMediaGallery();
             });
 
             // Documents Sync
-            window.db.collection("documents").onSnapshot(snapshot => {
-                window.allDocs = [];
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.firestoreId = doc.id;
-                    window.allDocs.push(d);
-                });
-
+            window.db.ref("documents").on("value", snapshot => {
+                window.allDocs = snapshotToArray(snapshot);
                 if (window.loadDocumentsData) window.loadDocumentsData();
             });
 
             // Complaints Sync
-            window.db.collection("complaints").onSnapshot(snapshot => {
-                window.allComplaints = [];
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.firestoreId = doc.id;
-                    window.allComplaints.push(d);
-                });
-
+            window.db.ref("complaints").on("value", snapshot => {
+                window.allComplaints = snapshotToArray(snapshot);
                 if (window.loadComplaintsData) window.loadComplaintsData();
             });
         }
@@ -2105,7 +2076,7 @@
                 size: (file.size / 1024).toFixed(2) + ' KB'
             };
 
-            window.db.collection('documents').add(doc).then(() => {
+            window.db.ref('documents').push(doc).then(() => {
                 alert('दस्तावेज़ अपलोड हो गया! (Cloud Upload)');
                 fileInput.value = '';
                 titleInput.value = '';
@@ -2118,12 +2089,12 @@
             const d = docs.find(x => x.id === id);
 
             if (d && d.firestoreId) {
-                window.db.collection('documents').doc(d.firestoreId).delete()
+                window.db.ref('documents/' + d.firestoreId).remove()
                     .then(() => alert("Deleted (Cloud)"));
             } else {
-                const qs = await window.db.collection('documents').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.delete().then(() => alert("Deleted (Cloud)"));
+                const qs = await window.db.ref('documents').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
                 } else {
                     let newDocs = docs.filter(x => x.id !== id);
                     localStorage.setItem('up_sangh_docs', JSON.stringify(newDocs));
@@ -2169,12 +2140,12 @@
             const o = officers.find(o => o.id === id);
             if (o) {
                 if (o.firestoreId) {
-                    window.db.collection('officers').doc(o.firestoreId).update({ role: newRole })
+                    window.db.ref('officers/' + o.firestoreId).update({ role: newRole })
                         .then(() => alert(`Role updated to ${newRole} (Cloud)`));
                 } else {
-                    const qs = await window.db.collection('officers').where('id', '==', id).get();
-                    if (!qs.empty) {
-                        qs.docs[0].ref.update({ role: newRole }).then(() => alert(`Role updated to ${newRole} (Cloud)`));
+                    const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) {
+                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ role: newRole }).then(() => alert(`Role updated to ${newRole} (Cloud)`));
                     } else {
                         // Local fallback
                         o.role = newRole;
@@ -2351,7 +2322,7 @@
                 date: new Date().toLocaleDateString('hi-IN')
             };
 
-            window.db.collection('media').add(mediaItem).then(() => {
+            window.db.ref('media').push(mediaItem).then(() => {
                 alert("मीडिया सफलतापूर्वक जोड़ा गया! (Cloud Upload)");
                 fileInput.value = '';
                 captionInput.value = '';
@@ -2364,12 +2335,12 @@
             const m = media.find(x => x.id === id);
 
             if (m && m.firestoreId) {
-                window.db.collection('media').doc(m.firestoreId).delete()
+                window.db.ref('media/' + m.firestoreId).remove()
                     .then(() => alert("Deleted (Cloud)"));
             } else {
-                const qs = await window.db.collection('media').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.delete().then(() => alert("Deleted (Cloud)"));
+                const qs = await window.db.ref('media').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
                 } else {
                     let newMedia = media.filter(x => x.id !== id);
                     localStorage.setItem('up_sangh_media', JSON.stringify(newMedia));
@@ -2455,12 +2426,12 @@
             const c = complaints.find(c => c.id === id);
 
             if (c && c.firestoreId) {
-                window.db.collection('complaints').doc(c.firestoreId).update({ status: 'Resolved' })
+                window.db.ref('complaints/' + c.firestoreId).update({ status: 'Resolved' })
                     .then(() => alert("शिकायत हल की गई! (Cloud)"));
             } else {
-                const qs = await window.db.collection('complaints').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.update({ status: 'Resolved' }).then(() => alert("शिकायत हल की गई! (Cloud)"));
+                const qs = await window.db.ref('complaints').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Resolved' }).then(() => alert("शिकायत हल की गई! (Cloud)"));
                 } else {
                     // Local
                     const idx = complaints.findIndex(x => x.id === id);
@@ -2481,12 +2452,12 @@
             const c = complaints.find(c => c.id === id);
 
             if (c && c.firestoreId) {
-                window.db.collection('complaints').doc(c.firestoreId).delete()
+                window.db.ref('complaints/' + c.firestoreId).remove()
                     .then(() => alert("Deleted (Cloud)"));
             } else {
-                const qs = await window.db.collection('complaints').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.delete().then(() => alert("Deleted (Cloud)"));
+                const qs = await window.db.ref('complaints').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
                 } else {
                     let newComplaints = complaints.filter(x => x.id !== id);
                     localStorage.setItem('up_sangh_complaints', JSON.stringify(newComplaints));
@@ -2577,7 +2548,7 @@
             let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
             const m = members.find(m => m.id === id);
             if (m && m.firestoreId) {
-                window.db.collection('members').doc(m.firestoreId).update({
+                window.db.ref('members/' + m.firestoreId).update({
                     fee_status: 'Paid',
                     payment_date: new Date().toISOString()
                 }).then(() => {
@@ -3409,7 +3380,7 @@
         }
 
         function viewOfficer(id) {
-            const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+            const officers = window.allOfficers || [];
             const o = officers.find(x => x.id === id);
             if (o) {
                 const content = `
@@ -3445,7 +3416,7 @@
         }
 
         window.openEditMember = function (id) {
-            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const members = window.allMembers || [];
             const m = members.find(x => x.id === id);
             if (m) {
                 document.getElementById('editMemId').value = m.id;
@@ -3475,7 +3446,7 @@
 
         window.saveMemberEdit = async function () {
             const id = parseInt(document.getElementById('editMemId').value);
-            let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            let members = window.allMembers || [];
             const m = members.find(m => m.id === id);
 
             if (m && m.firestoreId) {
@@ -3497,7 +3468,7 @@
                     updates.photo = await readFile(photoFile);
                 }
 
-                window.db.collection('members').doc(m.firestoreId).update(updates)
+                window.db.ref('members/' + m.firestoreId).update(updates)
                     .then(() => {
                         alert('सदस्य विवरण अपडेट किया गया! (Update Sent)');
                         document.getElementById('editMemberModal').style.display = 'none';
@@ -3640,7 +3611,7 @@
                     date: new Date().toLocaleDateString('hi-IN')
                 };
 
-                window.db.collection('officers').add(newOfficer)
+                window.db.ref('officers').push(newOfficer)
                     .then(() => {
                         // Reset
                         document.querySelectorAll('#section-officers input, #section-officers select').forEach(i => {
@@ -3664,7 +3635,7 @@
 
         // Edit Officer
         window.openEditOfficer = function (id) {
-            const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+            const officers = window.allOfficers || [];
             const o = officers.find(x => x.id === id);
             if (o) {
                 document.getElementById('editOffId').value = o.id;
@@ -3701,7 +3672,7 @@
 
         window.saveOfficerEdit = async function () {
             const id = parseInt(document.getElementById('editOffId').value);
-            let officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+            let officers = window.allOfficers || [];
             // Try to find the document with firestoreId if available.
             // Since we sync, the local object might have firestoreId if it came from sync.
             // If not, we have to find by ID then query cloud (inefficient but works if ID is unique timestamp).
@@ -3745,13 +3716,13 @@
                 if (!docId) {
                     // Try query by 'id' field (timestamp)
                     try {
-                        const qs = await window.db.collection('officers').where('id', '==', id).get();
-                        if (!qs.empty) docId = qs.docs[0].id;
+                        const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
+                        if (qs.exists()) docId = qs.docs[0].id;
                     } catch (err) { console.error(err); }
                 }
 
                 if (docId) {
-                    window.db.collection('officers').doc(docId).update(updates).then(() => {
+                    window.db.ref('officers/' + docId).update(updates).then(() => {
                         alert("Officer Updated (Cloud)");
                         document.getElementById('editOfficerModal').style.display = 'none';
                     });
@@ -3773,53 +3744,40 @@
         window.deleteOfficer = async function (id) {
             if (confirm('हटाना चाहते हैं?')) {
                 // Find ID
-                const officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+                const officers = window.allOfficers || [];
                 const o = officers.find(x => x.id === id);
                 let docId = o ? o.firestoreId : null;
                 if (!docId) {
-                    const qs = await window.db.collection('officers').where('id', '==', id).get();
-                    if (!qs.empty) docId = qs.docs[0].id;
+                    const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) docId = qs.docs[0].id;
                 }
 
                 if (docId) {
-                    window.db.collection('officers').doc(docId).delete().then(() => alert("Deleted from Cloud"));
+                    window.db.ref('officers/' + docId).remove().then(() => alert("Deleted from Cloud"));
                 } else {
-                    let newOfficers = officers.filter(o => o.id !== id);
-                    localStorage.setItem('up_sangh_officers', JSON.stringify(newOfficers));
-                    loadDashboardData();
+                    alert("Error: Officer not found in cloud. Cannot delete.");
                 }
             }
         };
 
         window.deleteIssue = async function (id) {
             if (confirm('हटाना चाहते हैं?')) {
-                const qs = await window.db.collection('issues').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.delete().then(() => alert("Issue Deleted"));
+                const qs = await window.db.ref('issues').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Issue Deleted"));
                 } else {
-                    // Local fallback
-                    let issues = JSON.parse(localStorage.getItem('up_sangh_issues')) || [];
-                    issues = issues.filter(i => i.id !== id);
-                    localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
-                    loadDashboardData();
+                    alert("Issue not found in Cloud.");
                 }
             }
         };
 
         window.solveIssue = async function (id) {
             if (confirm('क्या आप इस समस्या को "Solved" मार्क करना चाहते हैं?')) {
-                const qs = await window.db.collection('issues').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.update({ status: 'Solved' }).then(() => alert("Marked Solved"));
+                const qs = await window.db.ref('issues').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Solved' }).then(() => alert("Marked Solved"));
                 } else {
-                    let issues = JSON.parse(localStorage.getItem('up_sangh_issues')) || [];
-                    const index = issues.findIndex(i => i.id === id);
-                    if (index !== -1) {
-                        issues[index].status = 'Solved';
-                        localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
-                        alert('समस्या हल की गई (Issue Marked as Solved)!');
-                        loadDashboardData();
-                    }
+                    alert("Issue not found in Cloud or already solved locally.");
                 }
             }
         };
@@ -3829,52 +3787,42 @@
         window.deleteMember = async function (id) {
             if (confirm('क्या आप सुनिश्चित हैं कि आप इस सदस्य को हटाना चाहते हैं?')) {
                 // Find Firestore ID
-                const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+                const members = window.allMembers || [];
                 const m = members.find(x => x.id === id);
                 if (m && m.firestoreId) {
-                    window.db.collection('members').doc(m.firestoreId).delete().then(() => {
-                        alert("Member Deleted (Cloud)");
-                    });
+                    window.db.ref('members/' + m.firestoreId).remove()
+                        .then(() => alert("Member Deleted (Cloud)"))
+                        .catch(err => alert("Error deleting: " + err.message));
                 } else {
-                    // Only Local
-                    let newMembers = members.filter(m => m.id !== id);
-                    localStorage.setItem('up_sangh_members', JSON.stringify(newMembers));
-                    loadDashboardData();
+                    alert("Error: Member not found in Cloud (No Firestore ID). Cannot delete.");
                 }
             }
         }
 
         window.verifyMember = async function (id) {
             console.log("verifyMember called for ID:", id);
-            let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            let members = window.allMembers || [];
             // Use loose comparison (==) to handle string/number diffs
             const m = members.find(m => m.id == id);
 
             if (!m) {
-                alert("Member not found in local data!");
+                alert("Member not found in verified list!");
                 return;
             }
 
             if (m.firestoreId) {
                 console.log("Attempting Cloud Verification for:", m.firestoreId);
-                window.db.collection('members').doc(m.firestoreId).update({ status: 'Approved' })
+                window.db.ref('members/' + m.firestoreId).update({ status: 'Approved' })
                     .then(() => {
                         alert('सदस्य सत्यापित किया गया (Cloud Verified)!');
-                        loadDashboardData();
+                        // No need to reload manually, snapshot will handle it
                     })
                     .catch(err => {
                         console.error("Cloud Verify Error:", err);
                         alert("Verification Failed: " + err.message);
                     });
             } else {
-                console.log("Local Verification");
-                const index = members.findIndex(m => m.id == id);
-                if (index !== -1) {
-                    members[index].status = 'Approved';
-                    localStorage.setItem('up_sangh_members', JSON.stringify(members));
-                    alert('सदस्य सत्यापित किया गया (Local Verified)!');
-                    loadDashboardData();
-                }
+                alert("Error: Cannot verify. Member has no Firestore ID.");
             }
         };
 
@@ -3898,44 +3846,34 @@
 
         window.verifyOfficer = async function (id) {
             if (!confirm('क्या आप इस पदाधिकारी को सत्यापित करना चाहते हैं?')) return;
-            let officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
+            let officers = window.allOfficers || [];
             const o = officers.find(x => x.id === id);
             if (o) {
-                const qs = await window.db.collection('officers').where('id', '==', id).get();
-                if (!qs.empty) {
-                    qs.docs[0].ref.update({ status: 'Approved' }).then(() => alert("Officer Verified (Cloud)"));
+                const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' }).then(() => alert("Officer Verified (Cloud)"));
                 } else {
-                    o.status = 'Approved';
-                    localStorage.setItem('up_sangh_officers', JSON.stringify(officers));
-                    alert("Officer Verified (Local)");
-                    loadDashboardData();
+                    alert("Officer not found in Cloud.");
                 }
             }
         };
 
         window.rejectMember = async function (id) {
             if (confirm('क्या आप सुनिश्चित हैं कि आप इस आवेदन को अस्वीकार (Reject) करना चाहते हैं?')) {
-                let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+                let members = window.allMembers || [];
                 const m = members.find(m => m.id == id);
 
                 if (m && m.firestoreId) {
-                    window.db.collection('members').doc(m.firestoreId).update({ status: 'Rejected' })
+                    window.db.ref('members/' + m.firestoreId).update({ status: 'Rejected' })
                         .then(() => {
                             alert("Rejected (Cloud)");
-                            loadDashboardData();
                         })
                         .catch(err => {
                             console.error("Cloud Reject Error:", err);
                             alert("Rejection Failed: " + err.message);
                         });
                 } else {
-                    const index = members.findIndex(m => m.id == id);
-                    if (index !== -1) {
-                        members[index].status = 'Rejected';
-                        localStorage.setItem('up_sangh_members', JSON.stringify(members));
-                        alert('आवेदन अस्वीकार कर दिया गया (Local Only)!');
-                        loadDashboardData();
-                    }
+                    alert("Error: Cannot reject. Member has no Firestore ID.");
                 }
             }
         };
@@ -4004,7 +3942,7 @@
                     date: new Date().toLocaleDateString('hi-IN')
                 };
 
-                window.db.collection('members').add(newMember).then((docRef) => {
+                window.db.ref('members').push(newMember).then((docRef) => {
                     // Success
                     alert('सदस्य सफलतापूर्वक जोड़ा गया! (Saved to Cloud)');
                     document.getElementById('addMemberModal').style.display = 'none';
@@ -4023,8 +3961,8 @@
 
         window.processProfileRequest = async function (reqId) {
             try {
-                // Fetch latest requests from Cloud/Local
-                const requests = JSON.parse(localStorage.getItem('up_sangh_requests')) || [];
+                // Fetch latest requests from Cloud/Local (Synced Global)
+                const requests = window.allRequests || [];
                 const req = requests.find(r => r.reqId === reqId);
                 if (!req) { alert("Request not found."); return; }
 
@@ -4041,9 +3979,9 @@
                     const txn = req.txnId || 'N/A';
                     if (confirm(`Process Donation for ${req.name}?\nAmount: ₹${amt}\nTxn ID: ${txn}\n\nClick OK to Approve.`)) {
                         // Find Request Doc
-                        const qs = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                        if (!qs.empty) {
-                            qs.docs[0].ref.update({ status: 'Approved' }).then(() => alert("Donation Approved (Cloud)"));
+                        const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                        if (qs.exists()) {
+                            window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' }).then(() => alert("Donation Approved (Cloud)"));
                         }
                     }
                     return;
@@ -4055,7 +3993,7 @@
                     const amt = req.amount || 299;
                     if (confirm(`Process ${req.type} for ${req.name}?\nPlan: ${plan} (₹${amt})\n\nClick OK to Approve.`)) {
                         // Find Member by mobile
-                        const memQS = await window.db.collection('members').where('mobile', '==', req.mobile).get();
+                        const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
                         if (!memQS.empty) {
                             const mDoc = memQS.docs[0];
                             const updates = {
@@ -4072,8 +4010,8 @@
                             mDoc.ref.update(updates);
 
                             // Update Request
-                            const qs = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                            if (!qs.empty) qs.docs[0].ref.update({ status: 'Approved' });
+                            const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                            if (qs.exists()) window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
 
                             alert(req.type + " Approved (Cloud Success)!");
                         } else {
@@ -4087,7 +4025,7 @@
                 const c = req.changes;
                 // ... msg ...
                 if (confirm(`Approve profile updates for ${req.name}?`)) {
-                    const memQS = await window.db.collection('members').where('mobile', '==', req.mobile).get();
+                    const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
                     if (!memQS.empty) {
                         const mDoc = memQS.docs[0];
                         const mData = mDoc.data();
@@ -4107,15 +4045,15 @@
 
                         await mDoc.ref.update(updates);
 
-                        const qs = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                        if (!qs.empty) qs.docs[0].ref.update({ status: 'Approved' });
+                        const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                        if (qs.exists()) window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
                         alert('Request Approved! Member profile updated (Cloud).');
                     } else {
                         alert("Member not found in Cloud.");
                     }
                 } else if (confirm("Do you want to REJECT this request?")) {
-                    const qs = await window.db.collection('requests').where('reqId', '==', reqId).get();
-                    if (!qs.empty) qs.docs[0].ref.update({ status: 'Rejected' }).then(() => alert("Request Rejected"));
+                    const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                    if (qs.exists()) window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected"));
                 }
 
             } catch (err) {
@@ -4125,7 +4063,7 @@
         };
 
         window.viewMember = function (id) {
-            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const members = window.allMembers || [];
             const m = members.find(x => x.id === id);
             if (m) {
                 const wDist = m.work_district || m.workDistrict || '--';
@@ -4652,7 +4590,7 @@
                 date: new Date().toLocaleDateString('hi-IN')
             };
 
-            window.db.collection('notices').add(notice).then(() => {
+            window.db.ref('notices').push(notice).then(() => {
                 document.getElementById('noticeTitle').value = '';
                 document.getElementById('noticeContent').value = '';
                 alert("नोटिस पब्लिश हो गया! (Cloud Published)");
@@ -4661,9 +4599,9 @@
 
         window.deleteNotice = async function (id) {
             if (!confirm('मिटाना चाहते हैं?')) return;
-            const qs = await window.db.collection('notices').where('id', '==', id).get();
-            if (!qs.empty) {
-                qs.docs[0].ref.delete().then(() => alert("Deleted (Cloud)"));
+            const qs = await window.db.ref('notices').orderByChild('id').equalTo(id).once('value');
+            if (qs.exists()) {
+                window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
             } else {
                 let notices = JSON.parse(localStorage.getItem('up_sangh_notices')) || [];
                 notices = notices.filter(n => n.id !== id);

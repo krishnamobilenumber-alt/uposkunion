@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Registration Form
-    // DIAGNOSTIC ALERT - REMOVE AFTER FIX
-    // alert("System Updated to v3.2 - New Code Loaded"); 
+    // Registration Form Handler
 
     const regForm = document.getElementById('registrationForm');
     // Global State for Photos
@@ -190,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Fix: Split by " ("
             const distName = districtRaw.split(' (')[0].trim();
+            // alert("DEBUG WORK: " + distName); // Removed to be less annoying, but good for testing
 
             // 1. Populate Blocks
             blockSelect.innerHTML = '<option value="">-- ब्लॉक चुनें --</option>';
@@ -231,6 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const districtRaw = hDistrictInput.value;
             const distName = districtRaw.split(' (')[0].trim();
 
+            // Debugging
+            if (distName && !blockData[distName]) {
+                console.warn("Data missing for: " + distName);
+                alert("Debug: Data not found for " + distName + ". Please ensure spelling is correct.");
+            }
+
             // 1. Populate Blocks
             hBlockSelect.innerHTML = '<option value="">-- ब्लॉक चुनें --</option>';
             if (blockData[distName]) {
@@ -267,9 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
             photoInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
-                    // Basic size check (1MB)
-                    if (file.size > 1024 * 1024) {
-                        alert("फोटो का साइज 1MB से कम होना चाहिए।");
+                    // Strict size check (500KB) to ensure it fits in Firestore (1MB limit for doc)
+                    // Base64 adds ~33% overhead. 500KB -> ~666KB. Leaves ~300KB for other data.
+                    if (file.size > 500 * 1024) {
+                        alert("फोटो का साइज 500KB से कम होना चाहिए।\n(Image must be less than 500KB)");
                         this.value = "";
                         photoPreview.style.display = "none";
                         photoPlaceholder.style.display = "block";
@@ -301,8 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sigInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
-                    if (file.size > 512 * 1024) { // 500KB limit for signature
-                        alert("हस्ताक्षर का साइज 500KB से कम होना चाहिए।");
+                    if (file.size > 200 * 1024) { // 200KB limit for signature
+                        alert("हस्ताक्षर का साइज 200KB से कम होना चाहिए।\n(Signature must be less than 200KB)");
                         this.value = "";
                         sigPreview.style.display = 'none';
                         sigPlaceholder.style.display = 'block';
@@ -438,101 +445,129 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        regForm.addEventListener('submit', (e) => {
+        regForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log("Submit button clicked");
 
-            // Get form inputs
-            const name = document.getElementById('name').value;
-            const fatherName = document.getElementById('fname').value;
-            const dob = document.getElementById('dob').value;
-            const mobile = document.getElementById('mobile').value;
-            const homeDistrict = document.getElementById('home_district').value;
-            const homeAddress = document.getElementById('home_address').value;
-            const workDistrict = document.getElementById('work_district').value;
-            const workAddress = document.getElementById('work_address').value;
-            const department = document.getElementById('department').value;
-            const post = document.getElementById('post').value;
-            const password = document.getElementById('regPassword').value;
-            const membershipPlan = document.getElementById('membership_plan').value;
-            const membershipAmount = membershipPlan === 'Lifetime' ? 699 : 299;
+            try {
+                // Get form inputs
+                const name = document.getElementById('name').value;
+                const fatherName = document.getElementById('fname').value;
+                const dob = document.getElementById('dob').value;
+                const mobile = document.getElementById('mobile').value;
+                const homeDistrict = document.getElementById('home_district').value;
+                const homeAddress = document.getElementById('home_address').value;
+                const workDistrict = document.getElementById('work_district').value;
+                const workAddress = document.getElementById('work_address').value;
+                const department = document.getElementById('department').value;
+                const post = document.getElementById('post').value;
+                const password = document.getElementById('regPassword').value;
+                const membershipPlan = document.getElementById('membership_plan') ? document.getElementById('membership_plan').value : 'Yearly'; // Default if missing
+                const membershipAmount = membershipPlan === 'Lifetime' ? 699 : 299;
 
-            // --- FIRESTORE INTEGRATION ---
-            // Validate (Basic check)
-            if (name && mobile && department && post && password) {
-                // Create Member Object
-                const memberData = {
-                    id: Date.now(), // timestamp as ID helper
-                    name: name,
-                    fatherName: fatherName,
-                    father_name: fatherName,
-                    dob: dob,
-                    mobile: mobile,
-                    password: password,
-                    homeDistrict: homeDistrict,
-                    home_district: homeDistrict,
-                    home_tahsil: document.getElementById('home_tahsil').value.trim(),
-                    home_block: document.getElementById('home_block').value.trim(),
-                    homeAddress: homeAddress,
-                    home_address: homeAddress,
-                    workDistrict: workDistrict,
-                    work_district: workDistrict,
-                    work_tahsil: document.getElementById('work_tahsil').value.trim(),
-                    work_block: document.getElementById('work_block').value.trim(),
-                    workAddress: workAddress,
-                    work_address: workAddress,
-                    department: department,
-                    post: post,
-                    photo: photoBase64,
-                    signature: sigBase64,
-                    status: 'Pending',
-                    membership_plan: membershipPlan,
-                    membership_amount: membershipAmount,
-                    date: new Date().toLocaleDateString('hi-IN'), // Display String
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp() // Server Timestamp for sorting
-                };
+                // --- FIRESTORE INTEGRATION ---
+                // Validate (Basic check)
+                if (name && mobile && department && post && password) {
+                    // Create Member Object
+                    const memberData = {
+                        id: Date.now(), // timestamp as ID helper
+                        name: name,
+                        fatherName: fatherName,
+                        father_name: fatherName,
+                        dob: dob,
+                        mobile: mobile,
+                        password: password,
+                        homeDistrict: homeDistrict,
+                        home_district: homeDistrict,
+                        home_tahsil: document.getElementById('home_tahsil') ? document.getElementById('home_tahsil').value.trim() : '',
+                        home_block: document.getElementById('home_block') ? document.getElementById('home_block').value.trim() : '',
+                        homeAddress: homeAddress,
+                        home_address: homeAddress,
+                        workDistrict: workDistrict,
+                        work_district: workDistrict,
+                        work_tahsil: document.getElementById('work_tahsil') ? document.getElementById('work_tahsil').value.trim() : '',
+                        work_block: document.getElementById('work_block') ? document.getElementById('work_block').value.trim() : '',
+                        workAddress: workAddress,
+                        work_address: workAddress,
+                        department: department,
+                        post: post,
+                        photo: photoBase64 || "",
+                        signature: sigBase64 || "",
+                        status: 'Pending',
+                        membership_plan: membershipPlan,
+                        membership_amount: membershipAmount,
+                        date: new Date().toLocaleDateString('hi-IN'), // Display String
+                        createdAt: firebase.database.ServerValue.TIMESTAMP // Server Timestamp for sorting
+                    };
 
-                // Show loading state
-                const submitBtn = regForm.querySelector('button[type="submit"]');
-                const originalBtnText = submitBtn ? submitBtn.innerText : 'Submit';
-                if (submitBtn) {
-                    submitBtn.innerText = "Processing...";
-                    submitBtn.disabled = true;
-                }
+                    // Show loading state
+                    const submitBtn = regForm.querySelector('button[type="submit"]');
+                    const originalBtnText = submitBtn ? submitBtn.innerText : 'Submit';
+                    if (submitBtn) {
+                        submitBtn.innerText = "Processing...";
+                        // CHECK TOTAL SIZE
+                        const jsonString = JSON.stringify(memberData);
+                        const sizeInBytes = new TextEncoder().encode(jsonString).length;
+                        const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+                        console.log(`Payload Size: ${sizeInMB} MB`);
 
-                // Save to Firestore 'members' collection
-                db.collection("members").add(memberData)
-                    .then((docRef) => {
-                        console.log("Document written with ID: ", docRef.id);
-                        alert(`बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n\nआपका डेटा सर्वर पर सुरक्षित कर लिया गया है।\nअब आप लॉगिन कर सकते हैं।`);
-                        window.location.href = window.location.href; // Reload
-                    })
-                    .catch((error) => {
-                        console.error("Error adding document: ", error);
-                        alert("Error saving data: " + error.message);
-                        if (submitBtn) {
-                            submitBtn.innerText = originalBtnText;
-                            submitBtn.disabled = false;
+                        if (sizeInBytes > 950000) { // Safety buffer for data size limit
+                            alert(`Error: Data too large (${sizeInMB} MB). Please use smaller photos.\nMax allowed is ~0.9 MB.`);
+                            if (submitBtn) {
+                                submitBtn.innerText = "रजिस्टर करें";
+                                submitBtn.disabled = false;
+                            }
+                            return;
                         }
-                    });
 
+                        // Save to Realtime Database 'members' node
+                        // Ensure db is defined
+                        if (!window.db) {
+                            throw new Error("Database connection not established. Please refresh the page.");
+                        }
 
-                // Reset address visibility logic
-                if (homeAddressGroup) {
-                    homeAddressGroup.style.display = 'none';
-                    const ta = homeAddressGroup.querySelector('textarea');
-                    if (ta) ta.disabled = true;
+                        // Race Condition: Timeout if DB takes too long (e.g., bad network)
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error("Connection Timeout: Server is not responding. Check your internet.")), 15000)
+                        );
+
+                        await Promise.race([
+                            window.db.ref("members").push(memberData),
+                            timeoutPromise
+                        ]);
+
+                        console.log("Data written to Realtime Database successfully");
+
+                        // Use Custom Modal
+                        const modal = document.getElementById('successModal');
+                        if (modal) {
+                            const msg = document.getElementById('modalMessage');
+                            if (msg) msg.innerText = `बधाई हो ${name}! आपका रजिस्ट्रेशन सफल रहा।\n(Registration Successful)`;
+                            modal.classList.add('active'); // CSS class for visibility if 'active' is used
+                            modal.style.display = 'flex'; // Inline override just in case
+                        } else {
+                            alert(`Registration Successful!`);
+                        }
+
+                        // Cleanup after 3 seconds
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 3000);
+
+                    } else {
+                        alert('कृपया सभी आवश्यक जानकारी भरें।');
+                    }
+                } else {
+                    alert('कृपया सभी आवश्यक जानकारी भरें।');
                 }
-                if (workAddressGroup) {
-                    workAddressGroup.style.display = 'none';
-                    const ta = workAddressGroup.querySelector('textarea');
-                    if (ta) ta.disabled = true;
+            } catch (err) {
+                console.error("Registration Error: ", err);
+                alert("Error during registration: " + err.message);
+                const submitBtn = regForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerText = "रजिस्टर करें";
+                    submitBtn.disabled = false;
                 }
-                // Reset photo preview
-                if (photoPreview) photoPreview.style.display = 'none';
-                if (photoPlaceholder) photoPlaceholder.style.display = 'block';
-                photoBase64 = "";
-            } else {
-                alert('कृपया सभी आवश्यक जानकारी भरें।');
             }
         });
     }
@@ -551,25 +586,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const loginBtn = memberForm.querySelector('button');
                 if (loginBtn) loginBtn.innerText = "Checking...";
 
-                // Query Firestore for member with matching mobile
-                db.collection("members").where("mobile", "==", mobile).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
+                // Query Realtime Database for member with matching mobile
+                db.ref("members").orderByChild("mobile").equalTo(mobile).once("value")
+                    .then((snapshot) => {
+                        if (!snapshot.exists()) {
                             alert('मोबाइल नंबर पंजीकृत नहीं है ');
                             if (loginBtn) loginBtn.innerText = "Login";
                             return;
                         }
 
                         let found = false;
-                        querySnapshot.forEach((doc) => {
-                            const member = doc.data();
+                        snapshot.forEach((childSnap) => {
+                            const member = childSnap.val();
+                            member.firestoreId = childSnap.key; // Save key as ID
                             // Check password (in real app, use hashing!)
                             if (member.password === pass) {
                                 found = true;
                                 // Save minimal session info to LocalStorage (ok for session state)
                                 // But we load actual data from DB on dashboard
                                 localStorage.setItem('up_sangh_current_member', JSON.stringify(member)); // Keep this for session mgmt for now
-                                localStorage.setItem('up_sangh_member_doc_id', doc.id); // Save Doc ID for updates
+                                localStorage.setItem('up_sangh_member_doc_id', childSnap.key); // Save key for updates
 
                                 alert('लॉगिन सफल (Login Successful)!');
                                 window.location.replace('member_dashboard.html');
@@ -582,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     })
                     .catch((error) => {
-                        console.log("Error getting documents: ", error);
+                        console.log("Error getting data: ", error);
                         alert("Login Error: " + error.message);
                         if (loginBtn) loginBtn.innerText = "Login";
                     });
@@ -661,22 +697,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btn) btn.innerText = "Admin Login...";
                 setTimeout(() => window.location.replace('admin_dashboard.html'), 500);
             }
-            // 2. Check OFFICERS (Firestore)
+            // 2. Check OFFICERS (Realtime Database)
             else {
                 if (btn) btn.innerText = "Verifying...";
 
-                db.collection("officers").where("mobile", "==", user).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
+                db.ref("officers").orderByChild("mobile").equalTo(user).once("value")
+                    .then((snapshot) => {
+                        if (!snapshot.exists()) {
                             alert('गलत यूज़रनेम या पासवर्ड (Invalid Credentials)');
                             if (btn) btn.innerText = "Login";
                             return;
                         }
 
                         let found = false;
-                        querySnapshot.forEach((doc) => {
-                            const officer = doc.data();
-                            officer.firestoreId = doc.id; // Save ID
+                        snapshot.forEach((childSnap) => {
+                            const officer = childSnap.val();
+                            officer.firestoreId = childSnap.key; // Save key as ID
 
                             if (officer.password === pass) {
                                 found = true;
@@ -1010,3 +1046,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 });
+
+// --- ADMIN DASHBOARD MISSING HELPERS ---
+// These functions are called by the Admin Dashboard navigation but were missing.
+// We alias them to the main loader which handles all data rendering.
+window.loadMembers = function () { if (window.loadDashboardData) window.loadDashboardData(); };
+window.loadOfficers = function () { if (window.loadDashboardData) window.loadDashboardData(); };
+window.loadIssues = function () { if (window.loadDashboardData) window.loadDashboardData(); };
+

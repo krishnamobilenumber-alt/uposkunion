@@ -4,6 +4,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyCUlZWKLcyvdOA1aaGZIMD4X4-UxlcSNv8",
     authDomain: "up-sangh-union.firebaseapp.com",
+    databaseURL: "https://up-sangh-union-default-rtdb.firebaseio.com",
     projectId: "up-sangh-union",
     storageBucket: "up-sangh-union.firebasestorage.app",
     messagingSenderId: "622818555224",
@@ -11,12 +12,12 @@ const firebaseConfig = {
     measurementId: "G-WQ42LD9BVB"
 };
 
-// Initialize Firebase
+// Initialize Firebase with Realtime Database
 // Ensure Firebase SDKs are loaded in the HTML before this file
 if (typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
-    window.db = firebase.firestore();
-    console.log("Firebase Initialized");
+    window.db = firebase.database();
+    console.log("Firebase Realtime Database Initialized");
 } else {
     console.error("Firebase SDK not found! Make sure to include the scripts in your HTML head.");
 }

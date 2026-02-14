@@ -78,7 +78,7 @@
 
     <section class="container">
         <div class="form-container">
-            <form id="registrationForm">
+            <form id="registrationForm" novalidate>
                 <div class="form-group">
                     <label for="name">पूरा नाम (Full Name)</label>
                     <input type="text" id="name" placeholder="अपना नाम लिखें" required>
@@ -276,7 +276,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="home_address_group">
                     <label for="home_address">गृह पूरा पता (Home Full Address)</label>
                     <textarea id="home_address" rows="3"
                         placeholder="ग्राम/मकान नंबर, पोस्ट, मोहल्ला, पिनकोड सहित पूरा पता लिखें..."
@@ -305,7 +305,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="work_address_group">
                     <label for="work_address">कार्यस्थल पूरा पता (Workplace Full Address)</label>
                     <textarea id="work_address" rows="3"
                         placeholder="वर्तमान कार्यस्थल का पूरा पता, विभाग/कार्यालय विवरण सहित..." required></textarea>
@@ -321,19 +321,7 @@
                     <input type="text" id="post" list="post_list" placeholder="पद चुनें/खोजें..." required>
                 </div>
 
-                <div class="form-group"
-                    style="background: #fff8f0; padding: 15px; border-radius: 10px; border: 1px dashed #ffa500; margin-bottom: 20px;">
-                    <label for="membership_plan" style="color: #d35400; font-weight: bold;"><i
-                            class="fa-solid fa-crown"></i> सदस्यता का प्रकार चुनें (Select Membership Plan)</label>
-                    <select id="membership_plan" required
-                        style="width: 100%; padding: 12px; border: 1px solid #ffa500; border-radius: 8px; background: white; font-weight: 600; color: #333;">
-                        <option value="">-- सदस्यता प्रकार चुनें --</option>
-                        <option value="Yearly">वार्षिक सदस्यता (Yearly Membership) - ₹299</option>
-                        <option value="Lifetime">आजीवन सदस्यता (Lifetime Membership) - ₹699</option>
-                    </select>
-                    <small style="color: #e67e22; margin-top: 5px; display: block;">* नोट: वार्षिक सदस्यता 1 वर्ष के लिए
-                        वैध होगी। आजीवन सदस्यता के लिए दोबारा रिन्यूअल की आवश्यकता नहीं होगी।</small>
-                </div>
+                <!-- Membership Plan Removed as per Request -->
 
                 <div class="form-group">
                     <label for="regPassword">पासवर्ड बनाएं (Create Password)</label>
@@ -380,7 +368,25 @@
         </div>
     </footer>
 
-    <script src="script.js?v=3.3"></script>
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="success-modal">
+            <div class="success-icon-container">
+                <i class="fa-solid fa-check success-icon"></i>
+            </div>
+            <h3 class="modal-title">बधाई हो! (Success)</h3>
+            <p id="modalMessage" class="modal-message">
+                आपका रजिस्ट्रेशन सफलतापूर्वक हो गया है।
+            </p>
+            <button class="btn-modal" onclick="closeModal()">ठीक है (OK)</button>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="script.js?v=3.4"></script>
 </body>
 
 </html>

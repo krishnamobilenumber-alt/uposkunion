@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Firebase SDKs (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <style>
         /* Global & Reset */
@@ -1430,8 +1430,8 @@
                 console.log("Initializing Firestore Listeners for Member:", member.mobile);
 
                 // 1. Sync User Profile (Members Collection)
-                window.db.collection('members').where('mobile', '==', member.mobile).onSnapshot(snapshot => {
-                    if (!snapshot.empty) {
+                window.db.ref('members').orderByChild('mobile').equalTo(member.mobile).on('value', snapshot => {
+                    if (!!snapshot.exists()) {
                         const updatedMember = snapshot.docs[0].data();
                         updatedMember.firestoreId = snapshot.docs[0].id;
                         // Preserve session keys if needed, or just update
@@ -1446,7 +1446,7 @@
                 });
 
                 // 2. Sync Requests (User specific)
-                window.db.collection('requests').where('mobile', '==', member.mobile).onSnapshot(snapshot => {
+                window.db.ref('requests').orderByChild('mobile').equalTo(member.mobile).on('value', snapshot => {
                     const reqs = []; // We only get ours, but local storage expects array.
                     // CAUTION: localStorage might hold ALL requests if we were admin. 
                     // But as member, we only care about ours. However, existing code might expect 'requests' to be a list.
@@ -1454,9 +1454,9 @@
                     // No, simpler to just treat 'up_sangh_requests' as "My Requests" in this context?
                     // actually logic uses 'allRequests' but filters by mobile often. 
                     // Let's just store OUR requests.
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         reqs.push(d);
                     });
                     localStorage.setItem('up_sangh_requests', JSON.stringify(reqs));
@@ -1465,11 +1465,11 @@
                 });
 
                 // 3. Sync Applications
-                window.db.collection('applications').where('mobile', '==', member.mobile).onSnapshot(snapshot => {
+                window.db.ref('applications').orderByChild('mobile').equalTo(member.mobile).on('value', snapshot => {
                     const apps = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         apps.push(d);
                     });
                     localStorage.setItem('up_sangh_member_applications', JSON.stringify(apps));
@@ -1477,11 +1477,11 @@
                 });
 
                 // 4. Sync Complaints
-                window.db.collection('complaints').where('mobile', '==', member.mobile).onSnapshot(snapshot => {
+                window.db.ref('complaints').orderByChild('mobile').equalTo(member.mobile).on('value', snapshot => {
                     const comps = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         comps.push(d);
                     });
                     localStorage.setItem('up_sangh_member_complaints', JSON.stringify(comps));
@@ -1489,11 +1489,11 @@
                 });
 
                 // 5. Sync Donations
-                window.db.collection('donations').where('mobile', '==', member.mobile).onSnapshot(snapshot => {
+                window.db.ref('donations').orderByChild('mobile').equalTo(member.mobile).on('value', snapshot => {
                     const dons = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         dons.push(d);
                     });
                     localStorage.setItem('up_sangh_member_donations', JSON.stringify(dons));
@@ -1501,11 +1501,11 @@
                 });
 
                 // 6. Sync Notices (Public)
-                window.db.collection('notices').orderBy('id', 'desc').limit(20).onSnapshot(snapshot => {
+                window.db.ref('notices').orderByChild('id').limitToLast(20).on('value', snapshot => {
                     const notices = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         notices.push(d);
                     });
                     // Merge or overwrite? Overwrite is safer for sync.
@@ -1514,11 +1514,11 @@
                 });
 
                 // 7. Sync Documents (Public)
-                window.db.collection('documents').onSnapshot(snapshot => {
+                window.db.ref('documents').on('value', snapshot => {
                     const docs = [];
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        d.firestoreId = doc.id;
+                    snapshot.forEach(childSnap => {
+                        const d = childSnap.val();
+                        d.firestoreId = childSnap.key;
                         docs.push(d);
                     });
                     localStorage.setItem('up_sangh_docs', JSON.stringify(docs));
@@ -1695,7 +1695,7 @@
                         };
 
                         console.log("Saving request to Firestore:", requestData);
-                        window.db.collection('requests').add(requestData)
+                        window.db.ref('requests').push(requestData)
                             .then(() => {
                                 alert("Profile Update Request Submitted! Please wait for Block Panel approval.");
                                 console.log("Success! Reloading page...");
@@ -1900,7 +1900,7 @@
                         const existingInit = requests.find(r => r.mobile === member.mobile && r.type === 'Initial Fee Payment');
 
                         if (existingInit && existingInit.firestoreId) {
-                            window.db.collection('requests').doc(existingInit.firestoreId).update({
+                            window.db.ref('requests/' + existingInit.firestoreId).update({
                                 payment_status: 'Payment Sent',
                                 amount: member.membership_amount || 299,
                                 membership_plan: member.membership_plan || 'Yearly'
@@ -1910,7 +1910,7 @@
                             });
                         } else {
                             // Create new if not found
-                            window.db.collection('requests').add({
+                            window.db.ref('requests').push({
                                 reqId: 'PAY' + Date.now(),
                                 type: 'Initial Fee Payment',
                                 mobile: member.mobile,
@@ -1932,7 +1932,7 @@
                         const requests = JSON.parse(localStorage.getItem('up_sangh_requests')) || [];
                         const req = requests.find(r => r.reqId === activePaymentReqId);
                         if (req && req.firestoreId) {
-                            window.db.collection('requests').doc(req.firestoreId).update({
+                            window.db.ref('requests/' + req.firestoreId).update({
                                 payment_status: 'Payment Sent'
                             }).then(() => {
                                 alert("Payment confirmation sent to Admin! (Cloud Update)");
@@ -1974,7 +1974,7 @@
                         membership_plan: plan
                     };
 
-                    window.db.collection('requests').add(requestData)
+                    window.db.ref('requests').push(requestData)
                         .then(() => {
                             alert(`${plan} Renewal request submitted successfully! Please contact your Block/District admin for payment and approval.`);
                             location.reload();
@@ -2136,7 +2136,7 @@
                 };
 
                 console.log("Saving application to Firestore:", newApp);
-                window.db.collection('applications').add(newApp)
+                window.db.ref('applications').push(newApp)
                     .then(() => {
                         alert("Application submitted successfully!");
                         document.getElementById('applicationForm').reset();
@@ -2238,7 +2238,7 @@
                     };
 
                     console.log("Saving complaint to Firestore:", newComp);
-                    window.db.collection('complaints').add(newComp)
+                    window.db.ref('complaints').push(newComp)
                         .then(() => {
                             alert("आपकी शिकायत सफलतापूर्वक दर्ज कर ली गई है! (Cloud Synced)");
                             document.getElementById('complaintForm').reset();
@@ -2350,7 +2350,7 @@
                         timestamp: new Date().toLocaleString('hi-IN')
                     };
 
-                    window.db.collection('donations').add(newDonation)
+                    window.db.ref('donations').push(newDonation)
                         .then(() => {
                             // 2. Also create a request for Admin Approval
                             const reqData = {
@@ -2366,7 +2366,7 @@
                                 timestamp: new Date().toLocaleString('hi-IN'),
                                 payment_status: 'Payment Sent' // It's a donation, so payment is already sent
                             };
-                            return window.db.collection('requests').add(reqData);
+                            return window.db.ref('requests').push(reqData);
                         })
                         .then(() => {
                             alert("सहयोग की सूचना सफलतापूर्वक सबमिट कर दी गई है। एडमिन सत्यापन के बाद यह आपके इतिहास में स्वीकृत दिखेगा। (Cloud Synced)");
