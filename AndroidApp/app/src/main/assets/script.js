@@ -793,6 +793,65 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.replace('login.html');
                 }
             };
+
+            // --- 5 MINUTE AUTO-LOGOUT (Inactivity Timer) ---
+            const AUTO_LOGOUT_TIME = 5 * 60 * 1000; // 5 minutes in ms
+            const WARNING_TIME = 30 * 1000; // Show warning 30 seconds before logout
+            let inactivityTimer = null;
+            let warningTimer = null;
+            let warningShown = false;
+
+            // Create warning banner element
+            const warningBanner = document.createElement('div');
+            warningBanner.id = 'autoLogoutWarning';
+            warningBanner.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; background:linear-gradient(135deg,#ff4444,#cc0000); color:white; text-align:center; padding:12px 20px; z-index:9999; font-size:0.95rem; font-weight:600; box-shadow:0 2px 10px rgba(0,0,0,0.3); animation:slideDown 0.3s ease;';
+            warningBanner.innerHTML = '⚠️ <span id="warningText">आप 30 सेकंड में ऑटो लॉगआउट हो जाएंगे! (Auto-logout in 30s)</span> <button onclick="resetInactivityTimer()" style="margin-left:15px; padding:5px 15px; background:white; color:#cc0000; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">रहने दें (Stay Logged In)</button>';
+            document.body.appendChild(warningBanner);
+
+            // Add slide-down animation
+            const style = document.createElement('style');
+            style.textContent = '@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}';
+            document.head.appendChild(style);
+
+            function forceLogout() {
+                localStorage.removeItem(AUTH_KEY);
+                localStorage.removeItem('up_sangh_current_officer_session');
+                localStorage.removeItem('up_sangh_officer_token');
+                localStorage.removeItem('up_sangh_active_section_admin');
+                localStorage.removeItem('up_sangh_active_section_officer');
+                sessionStorage.removeItem('admin_logged_in');
+                alert('5 मिनट की निष्क्रियता के कारण आपको ऑटो लॉगआउट कर दिया गया है।\n(Auto-logged out due to 5 minutes of inactivity)');
+                window.location.replace('login.html');
+            }
+
+            window.resetInactivityTimer = function () {
+                // Clear existing timers
+                if (inactivityTimer) clearTimeout(inactivityTimer);
+                if (warningTimer) clearTimeout(warningTimer);
+                warningShown = false;
+                warningBanner.style.display = 'none';
+
+                // Set warning timer (fires 30s before logout)
+                warningTimer = setTimeout(function () {
+                    warningShown = true;
+                    warningBanner.style.display = 'block';
+                }, AUTO_LOGOUT_TIME - WARNING_TIME);
+
+                // Set logout timer
+                inactivityTimer = setTimeout(forceLogout, AUTO_LOGOUT_TIME);
+            };
+
+            // Track user activity
+            const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+            activityEvents.forEach(function (evt) {
+                document.addEventListener(evt, function () {
+                    resetInactivityTimer();
+                }, { passive: true });
+            });
+
+            // Start the timer
+            resetInactivityTimer();
+            console.log('✅ Admin Auto-Logout: 5 minute inactivity timer activated.');
         }
     }
 
