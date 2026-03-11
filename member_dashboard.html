@@ -605,13 +605,14 @@
                                 </div>
                                 <i class="fa-solid fa-download" style="color:#aaa;"></i>
                             </div>
-                            <div class="list-item">
+                            <div class="list-item" style="cursor:pointer;"
+                                onclick="window.open('membership_form.html','_blank')">
                                 <i class="fa-solid fa-file-lines list-icon"></i>
                                 <div class="list-text">
                                     <h4>Membership Form</h4>
-                                    <p>PDF - 1.0 MB</p>
+                                    <p>प्रिंट / डाउनलोड करें</p>
                                 </div>
-                                <i class="fa-solid fa-download" style="color:#aaa;"></i>
+                                <i class="fa-solid fa-download" style="color:#0056b3;"></i>
                             </div>
                         </div>
                     </div>
@@ -1738,15 +1739,43 @@
                 });
             }
 
+            // --- HELPER: Calculate Valid Till Date (1 year from approval) ---
+            function getValidTillDate(m) {
+                if (m.membership_plan === 'Lifetime') return 'Lifetime';
+                // Use valid_till if already set (from renewal/payment processing)
+                if (m.valid_till && m.valid_till !== 'Lifetime') {
+                    const vt = new Date(m.valid_till);
+                    if (!isNaN(vt.getTime())) {
+                        return vt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                    }
+                }
+                // Calculate from approval_date + 1 year
+                let baseDate = null;
+                if (m.approval_date) {
+                    baseDate = new Date(m.approval_date);
+                } else if (m.date) {
+                    // Fallback to registration date for old members
+                    baseDate = new Date(m.date);
+                }
+                if (baseDate && !isNaN(baseDate.getTime())) {
+                    const validTill = new Date(baseDate);
+                    validTill.setFullYear(validTill.getFullYear() + 1);
+                    return validTill.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                }
+                return 'N/A';
+            }
+
             // --- MEMBERSHIP & PAYMENT HISTORY LOGIC ---
 
             window.loadMembershipHistory = function () {
                 const historyBody = document.getElementById('membershipHistoryBody');
                 if (!historyBody) return;
 
+                const computedValidTill = getValidTillDate(member);
+
                 // Simulate/Derived History
                 let history = [
-                    { event: 'Initial Registration', date: member.date || 'N/A', status: 'Approved', validTill: '31 Dec 2025' }
+                    { event: 'Initial Registration', date: member.date || 'N/A', status: 'Approved', validTill: computedValidTill }
                 ];
 
                 // Add past renewal requests that were approved
@@ -1776,11 +1805,11 @@
                 const expiryEl = document.getElementById('memExpiryDate');
                 const dashValidEl = document.getElementById('dashValid');
 
-                const expiryDate = '31 Dec 2025'; // Default for now
+                const expiryDate = computedValidTill;
                 if (expiryEl) expiryEl.innerText = expiryDate;
                 if (dashValidEl) dashValidEl.innerText = expiryDate;
 
-                // Simple check: if year is 2025, show renewal button (simulated)
+                // Show renewal button if membership is expiring/expired
                 if (renewalCard) {
                     renewalCard.style.display = 'flex';
                 }

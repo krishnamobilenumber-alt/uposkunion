@@ -3720,7 +3720,7 @@
                     // Try query by 'id' field (timestamp)
                     try {
                         const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
-                        if (qs.exists()) docId = qs.docs[0].id;
+                        if (qs.exists()) docId = Object.keys(qs.val())[0];
                     } catch (err) { console.error(err); }
                 }
 
@@ -3752,7 +3752,7 @@
                 let docId = o ? o.firestoreId : null;
                 if (!docId) {
                     const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
-                    if (qs.exists()) docId = qs.docs[0].id;
+                    if (qs.exists()) docId = Object.keys(qs.val())[0];
                 }
 
                 if (docId) {
@@ -3815,7 +3815,7 @@
 
             if (m.firestoreId) {
                 console.log("Attempting Cloud Verification for:", m.firestoreId);
-                window.db.ref('members/' + m.firestoreId).update({ status: 'Approved' })
+                window.db.ref('members/' + m.firestoreId).update({ status: 'Approved', approval_date: new Date().toISOString() })
                     .then(() => {
                         alert('सदस्य सत्यापित किया गया (Cloud Verified)!');
                         // No need to reload manually, snapshot will handle it
@@ -4003,10 +4003,11 @@
                                 fee_status: 'Paid',
                                 membership_plan: plan,
                                 membership_amount: amt,
-                                valid_till: (plan === 'Lifetime' ? 'Lifetime' : '31 Dec 2026')
+                                valid_till: (plan === 'Lifetime' ? 'Lifetime' : new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString())
                             };
                             if (req.type === 'Initial Fee Payment') {
                                 updates.status = 'Approved';
+                                updates.approval_date = new Date().toISOString();
                                 updates.payment_date = new Date().toISOString();
                             }
 

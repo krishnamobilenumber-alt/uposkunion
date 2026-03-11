@@ -3720,7 +3720,7 @@
                     // Try query by 'id' field (timestamp)
                     try {
                         const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
-                        if (qs.exists()) docId = qs.docs[0].id;
+                        if (qs.exists()) docId = Object.keys(qs.val())[0];
                     } catch (err) { console.error(err); }
                 }
 
@@ -3752,7 +3752,7 @@
                 let docId = o ? o.firestoreId : null;
                 if (!docId) {
                     const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
-                    if (qs.exists()) docId = qs.docs[0].id;
+                    if (qs.exists()) docId = Object.keys(qs.val())[0];
                 }
 
                 if (docId) {
@@ -3815,7 +3815,7 @@
 
             if (m.firestoreId) {
                 console.log("Attempting Cloud Verification for:", m.firestoreId);
-                window.db.ref('members/' + m.firestoreId).update({ status: 'Approved' })
+                window.db.ref('members/' + m.firestoreId).update({ status: 'Approved', approval_date: new Date().toISOString() })
                     .then(() => {
                         alert('सदस्य सत्यापित किया गया (Cloud Verified)!');
                         // No need to reload manually, snapshot will handle it
@@ -3997,24 +3997,25 @@
                     if (confirm(`Process ${req.type} for ${req.name}?\nPlan: ${plan} (₹${amt})\n\nClick OK to Approve.`)) {
                         // Find Member by mobile
                         const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
-                        if (!memQS.empty) {
-                            const mDoc = memQS.docs[0];
+                        if (memQS.exists()) {
+                            const memKey = Object.keys(memQS.val())[0];
                             const updates = {
                                 fee_status: 'Paid',
                                 membership_plan: plan,
                                 membership_amount: amt,
-                                valid_till: (plan === 'Lifetime' ? 'Lifetime' : '31 Dec 2026')
+                                valid_till: (plan === 'Lifetime' ? 'Lifetime' : new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString())
                             };
                             if (req.type === 'Initial Fee Payment') {
                                 updates.status = 'Approved';
+                                updates.approval_date = new Date().toISOString();
                                 updates.payment_date = new Date().toISOString();
                             }
 
-                            mDoc.ref.update(updates);
+                            await window.db.ref('members/' + memKey).update(updates);
 
                             // Update Request
                             const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
-                            if (qs.exists()) window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
+                            if (qs.exists()) await window.db.ref('requests/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
 
                             alert(req.type + " Approved (Cloud Success)!");
                         } else {
@@ -4029,9 +4030,8 @@
                 // ... msg ...
                 if (confirm(`Approve profile updates for ${req.name}?`)) {
                     const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
-                    if (!memQS.empty) {
-                        const mDoc = memQS.docs[0];
-                        const mData = mDoc.data();
+                    if (memQS.exists()) {
+                        const memKey = Object.keys(memQS.val())[0];
                         // Apply
                         const updates = {};
                         Object.keys(c).forEach(key => {
@@ -4046,17 +4046,17 @@
                         });
                         updates.status = 'Approved';
 
-                        await mDoc.ref.update(updates);
+                        await window.db.ref('members/' + memKey).update(updates);
 
                         const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
-                        if (qs.exists()) window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
+                        if (qs.exists()) await window.db.ref('requests/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
                         alert('Request Approved! Member profile updated (Cloud).');
                     } else {
                         alert("Member not found in Cloud.");
                     }
                 } else if (confirm("Do you want to REJECT this request?")) {
                     const qs = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
-                    if (qs.exists()) window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected"));
+                    if (qs.exists()) await window.db.ref('requests/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected"));
                 }
 
             } catch (err) {

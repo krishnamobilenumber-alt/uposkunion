@@ -556,7 +556,7 @@
                                 style="color: var(--primary-btn); font-weight: 500; margin-top: 5px;">Location</p>
                         </div>
                         <div class="welcome-details-right">
-                            <span>Valid Till: <strong>31-12-2025</strong></span>
+                            <span>Valid Till: <strong id="offValidTill">--</strong></span>
                         </div>
                     </div>
 
@@ -1157,6 +1157,16 @@
             document.getElementById('headerAvatar').src = officer.photo || 'member_def_photo.jpg';
             document.getElementById('dashAvatar').src = officer.photo || 'member_def_photo.jpg';
 
+            // Set Valid Till dynamically (1 year from officer creation/approval date)
+            const offValidTillEl = document.getElementById('offValidTill');
+            if (offValidTillEl) {
+                let offBaseDate = officer.approval_date ? new Date(officer.approval_date) : (officer.date ? new Date(officer.date) : new Date());
+                if (isNaN(offBaseDate.getTime())) offBaseDate = new Date();
+                const offExpiry = new Date(offBaseDate);
+                offExpiry.setFullYear(offExpiry.getFullYear() + 1);
+                offValidTillEl.innerText = offExpiry.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
             // Restore Section
             const lastSection = localStorage.getItem('up_sangh_active_section_officer') || 'dashboard';
             showSection(lastSection);
@@ -1365,162 +1375,162 @@
                             const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
 
                             if (!mem!qs.exists()) {
-                                const mDoc = memQS.docs[0];
-                                const updates = {
-                                    fee_status: 'Paid',
-                                    membership_plan: plan,
-                                    membership_amount: amt,
-                                    valid_till: (plan === 'Lifetime' ? 'Lifetime' : '31 Dec 2026')
-                                };
+            const mDoc = memQS.docs[0];
+            const updates = {
+                fee_status: 'Paid',
+                membership_plan: plan,
+                membership_amount: amt,
+                valid_till: (plan === 'Lifetime' ? 'Lifetime' : '31 Dec 2026')
+            };
 
-                                if (req.type === 'Initial Fee Payment') {
-                                    updates.status = 'Approved';
-                                    updates.payment_date = new Date().toISOString();
-                                    // Approval Metadata
-                                    const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
-                                    if (curOfficer) {
-                                        updates.approved_by = curOfficer.name;
-                                        updates.approved_role = curOfficer.role;
-                                        updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
-                                        updates.approved_date = new Date().toLocaleDateString('en-GB');
-                                    }
-                                }
+            if (req.type === 'Initial Fee Payment') {
+                updates.status = 'Approved';
+                updates.payment_date = new Date().toISOString();
+                // Approval Metadata
+                const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
+                if (curOfficer) {
+                    updates.approved_by = curOfficer.name;
+                    updates.approved_role = curOfficer.role;
+                    updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
+                    updates.approved_date = new Date().toLocaleDateString('en-GB');
+                }
+            }
 
-                                await mDoc.ref.update(updates);
+            await mDoc.ref.update(updates);
 
-                                // Update Request
-                                const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
-                                if (!req!qs.exists()) {
-                                    reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved', newExpiry: '31 Dec 2026' });
-                                }
+            // Update Request
+            const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+            if (!req!qs.exists()) {
+                reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved', newExpiry: '31 Dec 2026' });
+            }
 
-                                alert('Renewal Approved! (Cloud Synced)');
-                            } else {
-                                alert("Member not found in Cloud database.");
-                            }
+            alert('Renewal Approved! (Cloud Synced)');
+        } else {
+            alert("Member not found in Cloud database.");
+        }
                         }
-                        return;
+        return;
                     }
 
-                    // Profile Update
-                    const c = req.changes;
-                    const changeList = [];
-                    if (c.name) changeList.push(`Name: ${req.name} -> ${c.name}`);
-                    if (c.father_name) changeList.push(`Father: ${c.father_name}`);
-                    if (c.post) changeList.push(`Post: ${c.post}`);
+        // Profile Update
+        const c = req.changes;
+        const changeList = [];
+        if (c.name) changeList.push(`Name: ${req.name} -> ${c.name}`);
+        if (c.father_name) changeList.push(`Father: ${c.father_name}`);
+        if (c.post) changeList.push(`Post: ${c.post}`);
 
-                    if (confirm(`Approve profile updates for ${req.name}?\n\n${changeList.join('\n')}`)) {
-                        const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
-                        if (!mem!qs.exists()) {
-                            const mDoc = memQS.docs[0];
-                            const updates = {};
+        if (confirm(`Approve profile updates for ${req.name}?\n\n${changeList.join('\n')}`)) {
+            const memQS = await window.db.ref('members').orderByChild('mobile').equalTo(req.mobile).once('value');
+            if (!mem!qs.exists()) {
+                const mDoc = memQS.docs[0];
+                const updates = {};
 
-                            Object.keys(c).forEach(key => {
-                                if (c[key] !== undefined && c[key] !== null) {
-                                    let tKey = key;
-                                    if (key === 'father_name') tKey = 'fatherName';
-                                    if (key === 'home_address') tKey = 'homeAddress';
-                                    if (key === 'home_district') tKey = 'homeDistrict';
-                                    if (key === 'work_district') tKey = 'workDistrict';
-                                    updates[tKey] = c[key];
-                                }
-                            });
-                            updates.status = 'Approved';
-
-                            // Approval Metadata
-                            const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
-                            if (curOfficer) {
-                                updates.approved_by = curOfficer.name;
-                                updates.approved_role = curOfficer.role;
-                                updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
-                                updates.approved_date = new Date().toLocaleDateString('en-GB');
-                            }
-
-                            await mDoc.ref.update(updates);
-
-                            const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
-                            if (!req!qs.exists()) reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
-
-                            alert('Request Approved! Member profile updated (Cloud).');
-                        } else {
-                            alert("Member not found in Cloud.");
-                        }
-
-                    } else if (confirm("Do you want to REJECT this request?")) {
-                        const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
-                        if (!req!qs.exists()) {
-                            reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected (Cloud)."));
-                        }
+                Object.keys(c).forEach(key => {
+                    if (c[key] !== undefined && c[key] !== null) {
+                        let tKey = key;
+                        if (key === 'father_name') tKey = 'fatherName';
+                        if (key === 'home_address') tKey = 'homeAddress';
+                        if (key === 'home_district') tKey = 'homeDistrict';
+                        if (key === 'work_district') tKey = 'workDistrict';
+                        updates[tKey] = c[key];
                     }
+                });
+                updates.status = 'Approved';
+
+                // Approval Metadata
+                const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
+                if (curOfficer) {
+                    updates.approved_by = curOfficer.name;
+                    updates.approved_role = curOfficer.role;
+                    updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
+                    updates.approved_date = new Date().toLocaleDateString('en-GB');
+                }
+
+                await mDoc.ref.update(updates);
+
+                const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+                if (!req!qs.exists()) reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' });
+
+                alert('Request Approved! Member profile updated (Cloud).');
+            } else {
+                alert("Member not found in Cloud.");
+            }
+
+        } else if (confirm("Do you want to REJECT this request?")) {
+            const reqQS = await window.db.ref('requests').orderByChild('reqId').equalTo(reqId).once('value');
+            if (!req!qs.exists()) {
+                reqwindow.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Request Rejected (Cloud)."));
+            }
+        }
                 } catch (err) {
-                    console.error("Process Request Error:", err);
-                    alert("Error: " + err.message);
-                }
+            console.error("Process Request Error:", err);
+            alert("Error: " + err.message);
+        }
             };
 
-            window.verifyMemberDirect = async function (id) {
-                if (!confirm("Approve this member?")) return;
+        window.verifyMemberDirect = async function (id) {
+            if (!confirm("Approve this member?")) return;
 
-                const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                const m = members.find(x => x.id === id);
+            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const m = members.find(x => x.id === id);
 
-                if (m && m.firestoreId) {
-                    const updates = { status: 'Approved' };
-                    // Metadata
-                    try {
-                        const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
-                        if (curOfficer) {
-                            updates.approved_by = curOfficer.name;
-                            updates.approved_role = curOfficer.role;
-                            updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
-                            updates.approved_date = new Date().toLocaleDateString('en-GB');
-                        }
-                    } catch (e) { }
-
-                    window.db.ref('members/' + m.firestoreId).update(updates)
-                        .then(() => alert("Member Approved (Cloud)"));
-                } else {
-                    // Fallback query
-                    const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
-                    if (qs.exists()) {
-                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' }).then(() => alert("Member Approved (Cloud Query)"));
-                    } else {
-                        alert("Member not found in Cloud.");
+            if (m && m.firestoreId) {
+                const updates = { status: 'Approved' };
+                // Metadata
+                try {
+                    const curOfficer = JSON.parse(localStorage.getItem('up_sangh_current_officer_session'));
+                    if (curOfficer) {
+                        updates.approved_by = curOfficer.name;
+                        updates.approved_role = curOfficer.role;
+                        updates.approved_location = (curOfficer.role === 'Block Admin') ? curOfficer.block : ((curOfficer.role === 'District Admin') ? curOfficer.district : curOfficer.division);
+                        updates.approved_date = new Date().toLocaleDateString('en-GB');
                     }
-                }
-            };
+                } catch (e) { }
 
-            window.rejectMemberDirect = async function (id) {
-                if (!confirm("Reject this member?")) return;
-                const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                const m = members.find(x => x.id === id);
-
-                if (m && m.firestoreId) {
-                    window.db.ref('members/' + m.firestoreId).update({ status: 'Rejected' })
-                        .then(() => alert("Member Rejected (Cloud)"));
+                window.db.ref('members/' + m.firestoreId).update(updates)
+                    .then(() => alert("Member Approved (Cloud)"));
+            } else {
+                // Fallback query
+                const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Approved' }).then(() => alert("Member Approved (Cloud Query)"));
                 } else {
-                    const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
-                    if (qs.exists()) {
-                        window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Member Rejected (Cloud Query)"));
-                    } else {
-                        alert("Member not found in Cloud.");
-                    }
+                    alert("Member not found in Cloud.");
                 }
-            };
+            }
+        };
 
-            window.viewMember = function (id) {
-                const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
-                const m = members.find(x => x.id === id);
-                if (m) {
-                    const wDist = m.work_district || m.workDistrict || '--';
-                    const wTehsil = m.work_tahsil || '';
-                    const wBlock = m.work_block || m.block || '';
+        window.rejectMemberDirect = async function (id) {
+            if (!confirm("Reject this member?")) return;
+            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const m = members.find(x => x.id === id);
 
-                    const hDist = m.home_district || m.homeDistrict || '--';
-                    const hTehsil = m.home_tahsil || '';
-                    const hBlock = m.home_block || '';
+            if (m && m.firestoreId) {
+                window.db.ref('members/' + m.firestoreId).update({ status: 'Rejected' })
+                    .then(() => alert("Member Rejected (Cloud)"));
+            } else {
+                const qs = await window.db.ref('members').orderByChild('id').equalTo(id).once('value');
+                if (qs.exists()) {
+                    window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Rejected' }).then(() => alert("Member Rejected (Cloud Query)"));
+                } else {
+                    alert("Member not found in Cloud.");
+                }
+            }
+        };
 
-                    const content = `
+        window.viewMember = function (id) {
+            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const m = members.find(x => x.id === id);
+            if (m) {
+                const wDist = m.work_district || m.workDistrict || '--';
+                const wTehsil = m.work_tahsil || '';
+                const wBlock = m.work_block || m.block || '';
+
+                const hDist = m.home_district || m.homeDistrict || '--';
+                const hTehsil = m.home_tahsil || '';
+                const hBlock = m.home_block || '';
+
+                const content = `
                         <div style="display:flex; gap:20px; align-items:start; flex-wrap: wrap;">
                             <div style="text-align: center;">
                                 ${m.photo ? `<img src="${m.photo}" style="width:120px; border-radius:8px; border:1px solid #ddd;">` : '<i class="fa-solid fa-user-circle" style="font-size:120px; color:#ccc;"></i>'}
@@ -1549,48 +1559,55 @@
                             </div>
                         </div>
                     `;
-                    document.getElementById('memberProfileContent').innerHTML = content;
-                    document.getElementById('viewMemberModal').style.display = 'flex';
-                }
+                document.getElementById('memberProfileContent').innerHTML = content;
+                document.getElementById('viewMemberModal').style.display = 'flex';
+            }
+        };
+
+        // --- ID CARD LOGIC ---
+        window.viewIDCard = function () {
+            const officerStr = localStorage.getItem('up_sangh_current_officer_session');
+            if (!officerStr) { alert("Please login first"); return; }
+            const officer = JSON.parse(officerStr);
+
+            const logo = localStorage.getItem('up_sangh_logo') || 'admin_logo.jpg';
+            const unionName = localStorage.getItem('up_sangh_name') || 'उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ';
+
+            // Verification data for QR
+            const verificationData = {
+                id: officer.id || 'OFF-' + Date.now(),
+                name: officer.name,
+                role: officer.role,
+                location: officer.district || officer.block || officer.division || 'UP',
+                verified: true,
+                union: 'UP Outsourcing & Contract Employees Union'
             };
 
-            // --- ID CARD LOGIC ---
-            window.viewIDCard = function () {
-                const officerStr = localStorage.getItem('up_sangh_current_officer_session');
-                if (!officerStr) { alert("Please login first"); return; }
-                const officer = JSON.parse(officerStr);
+            const qrData = encodeURIComponent(JSON.stringify(verificationData));
+            const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${qrData}`;
 
-                const logo = localStorage.getItem('up_sangh_logo') || 'admin_logo.jpg';
-                const unionName = localStorage.getItem('up_sangh_name') || 'उ.प्र. आउटसोर्सिंग एवं संविदा कर्मचारी संघ';
+            const currentDate = new Date().toLocaleDateString('en-GB');
 
-                // Verification data for QR
-                const verificationData = {
-                    id: officer.id || 'OFF-' + Date.now(),
-                    name: officer.name,
-                    role: officer.role,
-                    location: officer.district || officer.block || officer.division || 'UP',
-                    verified: true,
-                    union: 'UP Outsourcing & Contract Employees Union'
-                };
+            // Calculate Valid Till (1 year from officer date)
+            let offBase = officer.approval_date ? new Date(officer.approval_date) : (officer.date ? new Date(officer.date) : new Date());
+            if (isNaN(offBase.getTime())) offBase = new Date();
+            const offExp = new Date(offBase);
+            offExp.setFullYear(offExp.getFullYear() + 1);
+            const validTillStr = offExp.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
-                const qrData = encodeURIComponent(JSON.stringify(verificationData));
-                const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${qrData}`;
+            // Determine Color based on Role
+            let headerColor = '#2b5494';
+            let roleBadgeColor = 'linear-gradient(135deg, #2b5494, #1e3c6e)';
 
-                const currentDate = new Date().toLocaleDateString('en-GB');
+            if (officer.role === 'District Admin') {
+                headerColor = '#6a0dad';
+                roleBadgeColor = 'linear-gradient(135deg, #6a0dad, #4b0082)';
+            } else if (officer.role === 'Division Admin') {
+                headerColor = '#008080';
+                roleBadgeColor = 'linear-gradient(135deg, #008080, #004d4d)';
+            }
 
-                // Determine Color based on Role
-                let headerColor = '#2b5494';
-                let roleBadgeColor = 'linear-gradient(135deg, #2b5494, #1e3c6e)';
-
-                if (officer.role === 'District Admin') {
-                    headerColor = '#6a0dad';
-                    roleBadgeColor = 'linear-gradient(135deg, #6a0dad, #4b0082)';
-                } else if (officer.role === 'Division Admin') {
-                    headerColor = '#008080';
-                    roleBadgeColor = 'linear-gradient(135deg, #008080, #004d4d)';
-                }
-
-                const cardHtml = `
+            const cardHtml = `
                     <div id="printableIDCard" style="width:420px; height:250px; border-radius:10px; border:2.5px solid ${headerColor}; background: linear-gradient(135deg, #fff 75%, #f0f7ff 100%); position:relative; overflow:hidden; font-family:'Inter', sans-serif; box-shadow: 0 6px 20px rgba(0,0,0,0.12); margin: 0 auto; padding:10px; box-sizing:border-box;">
                         <!-- Card Header -->
                         <div style="display:flex; align-items:center; gap:10px; border-bottom:2.5px solid ${headerColor}; padding-bottom:3px; margin-bottom:5px;">
@@ -1617,7 +1634,7 @@
                                 <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">LOCATION:</strong> <span style="color:#c0392b; font-weight:700;">${officer.district || officer.block || officer.division || 'Headquarters'}</span></div>
                                 <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">MOBILE:</strong> <span>${officer.mobile || officer.userId || '--'}</span></div>
                                 <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">ISSUED:</strong> <span>${currentDate}</span></div>
-                                <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">VALID TILL:</strong> <span>31 Dec 2026</span></div>
+                                <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">VALID TILL:</strong> <span>${validTillStr}</span></div>
                             </div>
                         </div>
                         
@@ -1634,44 +1651,44 @@
                         <div style="position:absolute; bottom:0; left:0; width:100%; height:8px; background:${roleBadgeColor};"></div>
                     </div>
                 `;
-                document.getElementById('idCardPreviewContainer').innerHTML = cardHtml;
-                document.getElementById('idCardPreviewContainer').style.transform = 'scale(1)';
+            document.getElementById('idCardPreviewContainer').innerHTML = cardHtml;
+            document.getElementById('idCardPreviewContainer').style.transform = 'scale(1)';
 
-                const mCard = document.getElementById('modalCardContent');
-                if (mCard) mCard.innerHTML = cardHtml;
-                const mModal = document.getElementById('viewIDCardModal');
-                if (mModal) mModal.style.display = 'flex';
-            };
+            const mCard = document.getElementById('modalCardContent');
+            if (mCard) mCard.innerHTML = cardHtml;
+            const mModal = document.getElementById('viewIDCardModal');
+            if (mModal) mModal.style.display = 'flex';
+        };
 
-            window.printIDCard = function () {
-                const content = document.getElementById('printableIDCard');
-                if (!content) { viewIDCard(); return; }
+        window.printIDCard = function () {
+            const content = document.getElementById('printableIDCard');
+            if (!content) { viewIDCard(); return; }
 
-                const originalContents = document.body.innerHTML;
-                document.body.innerHTML = `
+            const originalContents = document.body.innerHTML;
+            document.body.innerHTML = `
                     <style>
                         body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
                     </style>
                     ${content.outerHTML}
                 `;
-                window.print();
-                location.reload();
-            };
+            window.print();
+            location.reload();
+        };
 
-            window.downloadIDCardPDF = function () {
-                if (typeof window.jspdf === 'undefined') { alert("Libraries loading..."); return; }
+        window.downloadIDCardPDF = function () {
+            if (typeof window.jspdf === 'undefined') { alert("Libraries loading..."); return; }
 
-                const card = document.getElementById('printableIDCard');
-                if (!card) { viewIDCard(); setTimeout(downloadIDCardPDF, 500); return; }
+            const card = document.getElementById('printableIDCard');
+            if (!card) { viewIDCard(); setTimeout(downloadIDCardPDF, 500); return; }
 
-                const { jsPDF } = window.jspdf;
-                html2canvas(card, { scale: 2 }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF('l', 'mm', [85, 54]);
-                    pdf.addImage(imgData, 'PNG', 0, 0, 85, 54);
-                    pdf.save(`Officer_ID_Card.pdf`);
-                });
-            };
+            const { jsPDF } = window.jspdf;
+            html2canvas(card, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('l', 'mm', [85, 54]);
+                pdf.addImage(imgData, 'PNG', 0, 0, 85, 54);
+                pdf.save(`Officer_ID_Card.pdf`);
+            });
+        };
 
         });
 
@@ -1698,6 +1715,13 @@
             const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${qrData}`;
 
             const currentDate = new Date().toLocaleDateString('en-GB');
+
+            // Calculate Valid Till (1 year from officer date)
+            let offBase2 = officer.approval_date ? new Date(officer.approval_date) : (officer.date ? new Date(officer.date) : new Date());
+            if (isNaN(offBase2.getTime())) offBase2 = new Date();
+            const offExp2 = new Date(offBase2);
+            offExp2.setFullYear(offExp2.getFullYear() + 1);
+            const validTillStr = offExp2.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
             // Determine Color based on Role
             let headerColor = '#2b5494';
@@ -1738,7 +1762,7 @@
                             <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">LOCATION:</strong> <span style="color:#c0392b; font-weight:700;">${officer.district || officer.block || officer.division || 'Headquarters'}</span></div>
                             <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">MOBILE:</strong> <span>${officer.mobile || officer.userId || '--'}</span></div>
                             <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">ISSUED:</strong> <span>${currentDate}</span></div>
-                            <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">VALID TILL:</strong> <span>31 Dec 2026</span></div>
+                            <div style="margin-bottom:2.5px; display:flex;"><strong style="min-width:70px; color:${headerColor};">VALID TILL:</strong> <span>${validTillStr}</span></div>
                         </div>
                     </div>
                     
