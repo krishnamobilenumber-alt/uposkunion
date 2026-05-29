@@ -1154,6 +1154,24 @@
                     <select id="offBlock" style="flex:1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">-- ब्लॉक चुनें (Block) --</option>
                     </select>
+                    <select id="offUnionPost" style="flex:1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">-- यूनियन में पद (Union Post) --</option>
+                        <option value="प्रदेश अध्यक्ष (State President)">प्रदेश अध्यक्ष (State President)</option>
+                        <option value="प्रदेश उपाध्यक्ष (State Vice President)">प्रदेश उपाध्यक्ष (State Vice President)</option>
+                        <option value="प्रदेश महामंत्री (State General Secretary)">प्रदेश महामंत्री (State General Secretary)</option>
+                        <option value="प्रदेश मंत्री (State Secretary)">प्रदेश मंत्री (State Secretary)</option>
+                        <option value="प्रदेश मीडिया प्रभारी (State Media Incharge)">प्रदेश मीडिया प्रभारी (State Media Incharge)</option>
+                        <option value="मंडल अध्यक्ष (Division President)">मंडल अध्यक्ष (Division President)</option>
+                        <option value="जिला अध्यक्ष (District President)">जिला अध्यक्ष (District President)</option>
+                        <option value="जिला उपाध्यक्ष (District Vice President)">जिला उपाध्यक्ष (District Vice President)</option>
+                        <option value="जिला महामंत्री (District General Secretary)">जिला महामंत्री (District General Secretary)</option>
+                        <option value="जिला मंत्री (District Secretary)">जिला मंत्री (District Secretary)</option>
+                        <option value="जिला कोषाध्यक्ष (District Treasurer)">जिला कोषाध्यक्ष (District Treasurer)</option>
+                        <option value="जिला मीडिया प्रभारी (District Media Incharge)">जिला मीडिया प्रभारी (District Media Incharge)</option>
+                        <option value="ब्लॉक अध्यक्ष (Block President)">ब्लॉक अध्यक्ष (Block President)</option>
+                        <option value="सदस्य (Member)">सदस्य (Member)</option>
+                        <option value="अन्य (Other)">अन्य (Other)</option>
+                    </select>
                 </div>
                 <div class="form-row" style="margin-top:-10px;">
                     <input type="text" id="offAddress" placeholder="पता (Address)" style="flex:1;">
@@ -1247,6 +1265,24 @@
                             </select>
                             <select id="editOffBlock" style="padding: 8px;">
                                 <option value="">-- ब्लॉक चुनें (Block) --</option>
+                            </select>
+                            <select id="editOffUnionPost" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="">-- यूनियन में पद (Union Post) --</option>
+                                <option value="प्रदेश अध्यक्ष (State President)">प्रदेश अध्यक्ष (State President)</option>
+                                <option value="प्रदेश उपाध्यक्ष (State Vice President)">प्रदेश उपाध्यक्ष (State Vice President)</option>
+                                <option value="प्रदेश महामंत्री (State General Secretary)">प्रदेश महामंत्री (State General Secretary)</option>
+                                <option value="प्रदेश मंत्री (State Secretary)">प्रदेश मंत्री (State Secretary)</option>
+                                <option value="प्रदेश मीडिया प्रभारी (State Media Incharge)">प्रदेश मीडिया प्रभारी (State Media Incharge)</option>
+                                <option value="मंडल अध्यक्ष (Division President)">मंडल अध्यक्ष (Division President)</option>
+                                <option value="जिला अध्यक्ष (District President)">जिला अध्यक्ष (District President)</option>
+                                <option value="जिला उपाध्यक्ष (District Vice President)">जिला उपाध्यक्ष (District Vice President)</option>
+                                <option value="जिला महामंत्री (District General Secretary)">जिला महामंत्री (District General Secretary)</option>
+                                <option value="जिला मंत्री (District Secretary)">जिला मंत्री (District Secretary)</option>
+                                <option value="जिला कोषाध्यक्ष (District Treasurer)">जिला कोषाध्यक्ष (District Treasurer)</option>
+                                <option value="जिला मीडिया प्रभारी (District Media Incharge)">जिला मीडिया प्रभारी (District Media Incharge)</option>
+                                <option value="ब्लॉक अध्यक्ष (Block President)">ब्लॉक अध्यक्ष (Block President)</option>
+                                <option value="सदस्य (Member)">सदस्य (Member)</option>
+                                <option value="अन्य (Other)">अन्य (Other)</option>
                             </select>
                             <input type="text" id="editOffAddress" placeholder="Address" style="padding:8px;">
                         </div>
@@ -3377,7 +3413,7 @@
                 html += `
                     <tr>
                         <td><strong>${o.name}</strong><br><small>S/o ${o.fatherName || '--'}</small><br>${statusBadge}</td>
-                        <td>${o.vibhag ? `<strong>${o.vibhag}</strong><br>` : ''}${o.post}</td>
+                        <td>${o.vibhag ? `<strong>${o.vibhag}</strong><br>` : ''}${o.post}${o.union_post ? `<br><span style="padding:2px 6px; background:#fff3e0; color:#e65100; font-size:0.75rem; border-radius:10px; font-weight:bold; margin-top:3px; display:inline-block;">Union: ${o.union_post}</span>` : ''}</td>
                         <td>${hierarchy}</td>
                         <td>${media}</td>
                         <td>ID: ${o.mobile}<br>Pass: ${o.password || '--'}</td>
@@ -3407,7 +3443,8 @@
                             <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.9rem;">
                                 <span><strong>विभाग:</strong> ${o.vibhag || '--'}</span>
-                                <span><strong>पद:</strong> ${o.post}</span>
+                                <span><strong>पद (Job Post):</strong> ${o.post}</span>
+                                <span style="grid-column: span 2;"><strong>यूनियन में पद (Union Post):</strong> <strong style="color: #e65100;">${o.union_post || '--'}</strong></span>
                                 <span><strong>मोबाइल:</strong> ${o.mobile}</span>
                                 <span><strong>मंडल:</strong> ${o.division || '--'}</span>
                                 <span><strong>जिला:</strong> ${o.district || '--'}</span>
@@ -3576,6 +3613,7 @@
             const division = document.getElementById('offDivision').value;
             const district = document.getElementById('offDistrict').value;
             const block = document.getElementById('offBlock').value;
+            const union_post = document.getElementById('offUnionPost').value;
             const father = document.getElementById('offFather').value;
             const address = document.getElementById('offAddress').value;
 
@@ -3618,6 +3656,7 @@
                     name,
                     vibhag: finalVibhag,
                     post: finalPost,
+                    union_post,
                     mobile, password, role,
                     division, district, block,
                     fatherName: father, address,
@@ -3664,6 +3703,12 @@
                 document.getElementById('editOffPass').value = o.password || '';
                 document.getElementById('editOffRole').value = o.role || 'Officer';
 
+                // Populate Union Post in both edit modals (if elements exist)
+                const uPost1 = document.getElementById('editOffUnionPost');
+                if (uPost1) uPost1.value = o.union_post || '';
+                const uPost2 = document.getElementById('editOffUnionPost2');
+                if (uPost2) uPost2.value = o.union_post || '';
+
                 // Hierarchical Location Loading
                 const divEl = document.getElementById('editOffDivision');
                 divEl.value = o.division || '';
@@ -3688,26 +3733,18 @@
         window.saveOfficerEdit = async function () {
             const id = parseInt(document.getElementById('editOffId').value);
             let officers = window.allOfficers || [];
-            // Try to find the document with firestoreId if available.
-            // Since we sync, the local object might have firestoreId if it came from sync.
-            // If not, we have to find by ID then query cloud (inefficient but works if ID is unique timestamp).
-            // Better: our Sync logic saves firestoreId? Wait, script.js stores firestoreId? None of the snapshot code in script.js stored firestoreId for officers! I added it for members only.
-            // I MUST UPDATE script.js snapshot for officers too!
-            // Or update the snapshot logic IN THIS FILE to store firestoreId for officers.
-            // I added `data.firestoreId = doc.id` for members in my replacement above.
-            // I should do it for officers too.
-            // Let's assume I fix the officer snapshot logic in the replacement above.
-            // I WILL FIX IT IN THE REPLACEMENT ABOVE (Lines 1462+).
-            // (Self-correction: I will update the Officer Sync logic in the first chunk to include ID).
-
             const o = officers.find(x => x.id === id);
 
             // Re-find in cloud if possible or use local match
             if (o) {
+                const uPostVal = (document.getElementById('editOffUnionPost') ? document.getElementById('editOffUnionPost').value : '') ||
+                                 (document.getElementById('editOffUnionPost2') ? document.getElementById('editOffUnionPost2').value : '');
+
                 const updates = {
                     name: document.getElementById('editOffName').value,
                     vibhag: document.getElementById('editOffVibhag').value,
                     post: document.getElementById('editOffPost').value,
+                    union_post: uPostVal,
                     mobile: document.getElementById('editOffMobile').value,
                     password: document.getElementById('editOffPass').value,
                     role: document.getElementById('editOffRole').value,
@@ -4852,6 +4889,25 @@
 
                 <select id="editOffBlock" style="padding:10px; border:1px solid #ccc; border-radius:4px; display:none;">
                     <option value="">-- ब्लॉक चुनें (Block) --</option>
+                </select>
+
+                <select id="editOffUnionPost2" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
+                    <option value="">-- यूनियन में पद (Union Post) --</option>
+                    <option value="प्रदेश अध्यक्ष (State President)">प्रदेश अध्यक्ष (State President)</option>
+                    <option value="प्रदेश उपाध्यक्ष (State Vice President)">प्रदेश उपाध्यक्ष (State Vice President)</option>
+                    <option value="प्रदेश महामंत्री (State General Secretary)">प्रदेश महामंत्री (State General Secretary)</option>
+                    <option value="प्रदेश मंत्री (State Secretary)">प्रदेश मंत्री (State Secretary)</option>
+                    <option value="प्रदेश मीडिया प्रभारी (State Media Incharge)">प्रदेश मीडिया प्रभारी (State Media Incharge)</option>
+                    <option value="मंडल अध्यक्ष (Division President)">मंडल अध्यक्ष (Division President)</option>
+                    <option value="जिला अध्यक्ष (District President)">जिला अध्यक्ष (District President)</option>
+                    <option value="जिला उपाध्यक्ष (District Vice President)">जिला उपाध्यक्ष (District Vice President)</option>
+                    <option value="जिला महामंत्री (District General Secretary)">जिला महामंत्री (District General Secretary)</option>
+                    <option value="जिला मंत्री (District Secretary)">जिला मंत्री (District Secretary)</option>
+                    <option value="जिला कोषाध्यक्ष (District Treasurer)">जिला कोषाध्यक्ष (District Treasurer)</option>
+                    <option value="जिला मीडिया प्रभारी (District Media Incharge)">जिला मीडिया प्रभारी (District Media Incharge)</option>
+                    <option value="ब्लॉक अध्यक्ष (Block President)">ब्लॉक अध्यक्ष (Block President)</option>
+                    <option value="सदस्य (Member)">सदस्य (Member)</option>
+                    <option value="अन्य (Other)">अन्य (Other)</option>
                 </select>
 
                 <input type="text" id="editOffFather" placeholder="पिता का नाम"

@@ -170,7 +170,9 @@
 
             // Filter for District Admins or specific roles that act as Presidents, and must be Approved
             const filtered = allPresidentsCache.filter(o =>
-                (o.role === 'District Admin' || (o.post && o.post.includes('अध्यक्ष'))) &&
+                (o.role === 'District Admin' || 
+                 (o.post && o.post.includes('अध्यक्ष')) || 
+                 (o.union_post && o.union_post.includes('अध्यक्ष'))) &&
                 (o.status || 'Approved') === 'Approved'
             );
 
