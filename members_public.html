@@ -259,7 +259,6 @@
             grid.innerHTML = '';
 
             const filteredMembers = members.filter(m => {
-                const isApproved = m.status === 'Approved';
                 const nameMatch = m.name && m.name.toLowerCase().includes(searchTerm);
                 const mobileMatch = m.mobile && m.mobile.includes(searchTerm);
                 const matchesSearch = !searchTerm || nameMatch || mobileMatch;
@@ -269,7 +268,7 @@
                 const matchesDept = !deptTerm || m.department === deptTerm;
                 const matchesPost = !postTerm || m.post === postTerm;
 
-                return isApproved && matchesSearch && matchesDistrict && matchesDept && matchesPost;
+                return matchesSearch && matchesDistrict && matchesDept && matchesPost;
             });
 
             if (filteredMembers.length === 0) {
