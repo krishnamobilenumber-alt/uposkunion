@@ -2825,7 +2825,7 @@
         };
 
         window.handleRoleChange = function (formMode) {
-            const prefix = formMode === 'add' ? 'off' : 'editOff';
+            const prefix = formMode === 'add' ? 'off' : (formMode === 'quick' ? 'quickOff' : 'editOff');
             const role = document.getElementById(prefix + 'Role').value;
             const divEl = document.getElementById(prefix + 'Division');
             const distEl = document.getElementById(prefix + 'District');
@@ -2856,7 +2856,7 @@
         };
 
         window.populateAllDistricts = function (formMode) {
-            const prefix = formMode === 'add' ? 'off' : 'editOff';
+            const prefix = formMode === 'add' ? 'off' : (formMode === 'quick' ? 'quickOff' : 'editOff');
             const distSel = document.getElementById(prefix + 'District');
             if (!distSel) return;
 
@@ -2979,7 +2979,7 @@
         };
 
         window.handleLocationChange = function (formMode, level, preSelectedValue = null) {
-            const prefix = formMode === 'add' ? 'off' : 'editOff';
+            const prefix = formMode === 'add' ? 'off' : (formMode === 'quick' ? 'quickOff' : 'editOff');
             const divId = prefix + 'Division';
             const distId = prefix + 'District';
             const blockId = prefix + 'Block';
@@ -3403,7 +3403,15 @@
                     ? `<button onclick="verifyOfficer(${o.id})" class="btn btn-sm btn-success" title="Approve Officer"><i class="fa-solid fa-check"></i></button>`
                     : '';
 
-                const hierarchy = `${o.role}<br><small>${o.division ? o.division + ' मंडल' : ''} ${o.district ? '| ' + o.district : ''} ${o.block ? '| ' + o.block : ''}</small>`;
+                const roleText = o.role || 'Officer';
+                const roleDisplay = roleText === 'Officer' ? 'Regular Officer' : roleText;
+                const hierarchy = `
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span>${roleDisplay}</span>
+                        ${isFullControl ? `<button onclick="openQuickPromote(${o.id})" class="btn btn-sm btn-secondary" style="padding:2px 5px; font-size:0.75rem; border-radius:4px; line-height:1; cursor:pointer;" title="Quick Change Role/Post"><i class="fa-solid fa-user-shield"></i></button>` : ''}
+                    </div>
+                    <small>${o.division ? o.division + ' मंडल' : ''} ${o.district ? '| ' + o.district : ''} ${o.block ? '| ' + o.block : ''}</small>
+                `;
                 const media = `
                     <div style="display:flex; gap:5px;">
                         ${o.photo ? `<img src="${o.photo}" title="Photo" style="width:30px; height:35px; object-fit:cover; border:1px solid #ccc;">` : '<i class="fa-solid fa-user-circle" title="No Photo"></i>'}
@@ -3809,6 +3817,129 @@
                 } else {
                     alert("Error: Officer not found in cloud. Cannot delete.");
                 }
+            }
+        };
+
+        window.openQuickPromote = function (id) {
+            const officers = window.allOfficers || [];
+            const o = officers.find(x => x.id === id);
+            if (!o) {
+                alert("Officer not found!");
+                return;
+            }
+
+            document.getElementById('quickOffId').value = o.id;
+            document.getElementById('quickOffDocId').value = o.firestoreId || '';
+            document.getElementById('quickOffNameSpan').innerText = o.name;
+
+            const roleVal = o.role || 'Officer';
+            document.getElementById('quickOffRole').value = roleVal;
+            document.getElementById('quickOffUnionPost').value = o.union_post || '';
+
+            // Reset preset selector
+            document.getElementById('quickPresetSelect').value = '';
+
+            // Populate Division dropdown dynamically
+            const divSel = document.getElementById('quickOffDivision');
+            divSel.innerHTML = '<option value="">-- मंडल चुनें (Division) --</option>';
+            for (let division in locationData) {
+                const opt = document.createElement('option');
+                opt.value = division;
+                opt.innerText = division;
+                divSel.appendChild(opt);
+            }
+            divSel.value = o.division || '';
+
+            // Trigger cascading dropdowns for district and block
+            handleLocationChange('quick', 'division', o.district);
+            if (o.district) {
+                handleLocationChange('quick', 'district', o.block);
+                document.getElementById('quickOffBlock').value = o.block || '';
+            }
+
+            // Sync role visibility in quick promote modal
+            handleRoleChange('quick');
+
+            // Open Modal
+            document.getElementById('quickChangeRoleModal').style.display = 'flex';
+        };
+
+        window.handleQuickPresetChange = function () {
+            const val = document.getElementById('quickPresetSelect').value;
+            const roleSel = document.getElementById('quickOffRole');
+            const postSel = document.getElementById('quickOffUnionPost');
+
+            if (val === 'block_president') {
+                roleSel.value = 'Block Admin';
+                postSel.value = 'ब्लॉक अध्यक्ष (Block President)';
+            } else if (val === 'district_president') {
+                roleSel.value = 'District Admin';
+                postSel.value = 'जिला अध्यक्ष (District President)';
+            } else if (val === 'division_president') {
+                roleSel.value = 'Division Admin';
+                postSel.value = 'मंडल अध्यक्ष (Division President)';
+            } else if (val === 'state_president') {
+                roleSel.value = 'State Admin';
+                postSel.value = 'प्रदेश अध्यक्ष (State President)';
+            } else if (val === 'regular_officer') {
+                roleSel.value = 'Officer';
+                postSel.value = 'सदस्य (Member)';
+            }
+
+            // Sync role visibility in quick promote modal
+            handleRoleChange('quick');
+        };
+
+        window.saveQuickRoleChange = async function () {
+            const id = parseInt(document.getElementById('quickOffId').value);
+            const docId = document.getElementById('quickOffDocId').value;
+            
+            const role = document.getElementById('quickOffRole').value;
+            const union_post = document.getElementById('quickOffUnionPost').value;
+            
+            const division = document.getElementById('quickOffDivision').value;
+            const district = document.getElementById('quickOffDistrict').value;
+            const block = document.getElementById('quickOffBlock').value;
+
+            // Validation
+            if (role === 'Division Admin' && !division) {
+                alert('Division Admin बनाने के लिए "मंडल (Division)" चुनना अनिवार्य है।');
+                return;
+            }
+            if (role === 'District Admin' && !district) {
+                alert('District Admin बनाने के लिए "जिला (District)" चुनना अनिवार्य है।');
+                return;
+            }
+            if (role === 'Block Admin' && (!district || !block)) {
+                alert('Block Admin बनाने के लिए "जिला" और "ब्लॉक" चुनना अनिवार्य है।');
+                return;
+            }
+
+            const updates = {
+                role: role,
+                union_post: union_post,
+                division: (role === 'Division Admin') ? division : '',
+                district: (role === 'District Admin' || role === 'Block Admin' || role === 'Officer') ? district : '',
+                block: (role === 'Block Admin' || role === 'Officer') ? block : ''
+            };
+
+            let finalDocId = docId;
+            if (!finalDocId) {
+                try {
+                    const qs = await window.db.ref('officers').orderByChild('id').equalTo(id).once('value');
+                    if (qs.exists()) finalDocId = Object.keys(qs.val())[0];
+                } catch (err) { console.error(err); }
+            }
+
+            if (finalDocId) {
+                window.db.ref('officers/' + finalDocId).update(updates).then(() => {
+                    alert("Officer Role & Post Updated!");
+                    document.getElementById('quickChangeRoleModal').style.display = 'none';
+                }).catch(err => {
+                    alert("Update failed: " + err.message);
+                });
+            } else {
+                alert("Error: Officer not found in cloud database.");
             }
         };
 
@@ -4981,6 +5112,93 @@
                         class="fa-solid fa-print"></i> Print Card</button>
                 <button onclick="downloadIDCardPDF()" class="btn btn-success btn-sm"><i
                         class="fa-solid fa-file-pdf"></i> Download</button>
+            </div>
+        </div>
+    </div>
+    <!-- Quick Change Role Modal -->
+    <div id="quickChangeRoleModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1005; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+        <div style="background:white; padding:25px; border-radius:15px; width:90%; max-width:450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f0f0f0; padding-bottom:12px; margin-bottom:20px;">
+                <h3 style="margin:0; font-size:1.25rem; color:#333;"><i class="fa-solid fa-user-shield" style="color:#007bff; margin-right:8px;"></i>पद / भूमिका बदलें</h3>
+                <button onclick="document.getElementById('quickChangeRoleModal').style.display='none'" style="border:none; background:#eee; width:28px; height:28px; border-radius:50%; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            
+            <input type="hidden" id="quickOffId">
+            <input type="hidden" id="quickOffDocId">
+
+            <div style="margin-bottom:15px; background:#f8f9fa; padding:12px 15px; border-radius:8px; border-left:4px solid #007bff;">
+                <span style="font-size:0.8rem; color:#666; display:block; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">पदाधिकारी का नाम (Officer Name)</span>
+                <span id="quickOffNameSpan" style="font-size:1.1rem; color:#222; font-weight:bold; display:block; margin-top:3px;">--</span>
+            </div>
+
+            <!-- Quick Preset -->
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold; font-size:0.85rem; color:#555; display:block; margin-bottom:6px;">त्वरित चयन (Quick Preset):</label>
+                <select id="quickPresetSelect" onchange="handleQuickPresetChange()" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; background:#fff; cursor:pointer;">
+                    <option value="">-- Preset चुनें (Select Preset) --</option>
+                    <option value="state_president">प्रदेश अध्यक्ष (State President)</option>
+                    <option value="division_president">मंडल अध्यक्ष (Division President)</option>
+                    <option value="district_president">जिला अध्यक्ष (District President)</option>
+                    <option value="block_president">ब्लॉक अध्यक्ष (Block President)</option>
+                    <option value="regular_officer">सिमित पहुँच (Regular Officer)</option>
+                </select>
+            </div>
+
+            <hr style="border:none; border-top:1px solid #eee; margin:15px 0;">
+
+            <!-- Custom/Detailed Fields -->
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold; font-size:0.85rem; color:#555; display:block; margin-bottom:6px;">पहुँच स्तर / रोल (Access Role):</label>
+                <select id="quickOffRole" onchange="handleRoleChange('quick')" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem;">
+                    <option value="State Admin">प्रदेश एडमिन (State Admin)</option>
+                    <option value="Division Admin">मंडल एडमिन (Division Admin)</option>
+                    <option value="District Admin">जिला एडमिन (District Admin)</option>
+                    <option value="Block Admin">ब्लॉक एडमिन (Block Admin)</option>
+                    <option value="Officer">सिमित पहुँच (Regular Officer)</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold; font-size:0.85rem; color:#555; display:block; margin-bottom:6px;">यूनियन में पद (Union Post):</label>
+                <select id="quickOffUnionPost" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem;">
+                    <option value="">-- यूनियन में पद चुनें --</option>
+                    <option value="प्रदेश अध्यक्ष (State President)">प्रदेश अध्यक्ष (State President)</option>
+                    <option value="प्रदेश उपाध्यक्ष (State Vice President)">प्रदेश उपाध्यक्ष (State Vice President)</option>
+                    <option value="प्रदेश महामंत्री (State General Secretary)">प्रदेश महामंत्री (State General Secretary)</option>
+                    <option value="प्रदेश मंत्री (State Secretary)">प्रदेश मंत्री (State Secretary)</option>
+                    <option value="प्रदेश मीडिया प्रभारी (State Media Incharge)">प्रदेश मीडिया प्रभारी (State Media Incharge)</option>
+                    <option value="मंडल अध्यक्ष (Division President)">मंडल अध्यक्ष (Division President)</option>
+                    <option value="जिला अध्यक्ष (District President)">जिला अध्यक्ष (District President)</option>
+                    <option value="जिला उपाध्यक्ष (District Vice President)">जिला उपाध्यक्ष (District Vice President)</option>
+                    <option value="जिला महामंत्री (District General Secretary)">जिला महामंत्री (District General Secretary)</option>
+                    <option value="जिला मंत्री (District Secretary)">जिला मंत्री (District Secretary)</option>
+                    <option value="जिला कोषाध्यक्ष (District Treasurer)">जिला कोषाध्यक्ष (District Treasurer)</option>
+                    <option value="जिला मीडिया प्रभारी (District Media Incharge)">जिला मीडिया प्रभारी (District Media Incharge)</option>
+                    <option value="ब्लॉक अध्यक्ष (Block President)">ब्लॉक अध्यक्ष (Block President)</option>
+                    <option value="सदस्य (Member)">सदस्य (Member)</option>
+                    <option value="अन्य (Other)">अन्य (Other)</option>
+                </select>
+            </div>
+
+            <!-- Locations (Conditionally Visible via handleRoleChange('quick')) -->
+            <div style="margin-bottom:15px;">
+                <select id="quickOffDivision" onchange="handleLocationChange('quick', 'division')" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; margin-top:8px; display:none;">
+                    <option value="">-- मंडल चुनें (Division) --</option>
+                </select>
+
+                <select id="quickOffDistrict" onchange="handleLocationChange('quick', 'district')" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; margin-top:8px; display:none;">
+                    <option value="">-- जिला चुनें (District) --</option>
+                </select>
+
+                <select id="quickOffBlock" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; margin-top:8px; display:none;">
+                    <option value="">-- ब्लॉक चुनें (Block) --</option>
+                </select>
+            </div>
+
+            <div style="margin-top:25px; text-align:right; display:flex; gap:12px; justify-content:flex-end; border-top:1px solid #eee; padding-top:15px;">
+                <button onclick="document.getElementById('quickChangeRoleModal').style.display='none'" class="btn btn-secondary" style="background:#6c757d; border:none; padding:10px 20px; border-radius:6px; color:white; cursor:pointer; font-weight:bold; font-size:0.9rem;">रद्द करें (Cancel)</button>
+                <button onclick="saveQuickRoleChange()" class="btn btn-success" style="background:#28a745; border:none; padding:10px 20px; border-radius:6px; color:white; cursor:pointer; font-weight:bold; font-size:0.9rem;">अपडेट करें (Update)</button>
             </div>
         </div>
     </div>
