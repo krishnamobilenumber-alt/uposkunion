@@ -175,7 +175,15 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js?v=9"></script>
+
     <script>
+        // Global members cache (loaded from Firebase)
+        let allMembersCache = [];
+
         const districts = [
             "Agra (आगरा)", "Aligarh (अलीगढ़)", "Ambedkar Nagar (अम्बेडकर नगर)", "Amethi (अमेठी)", "Amroha (अमरोहा)",
             "Auraiya (औरैया)", "Ayodhya (अयोध्या)", "Azamgarh (आजमगढ़)", "Baghpat (बागपत)", "Bahraich (बहराइच)",
@@ -217,10 +225,30 @@
             districts.forEach(d => { dSelect.innerHTML += `<option value="${d}">${d}</option>`; });
             depts.forEach(d => { deptSelect.innerHTML += `<option value="${d}">${d}</option>`; });
             posts.forEach(p => { postSelect.innerHTML += `<option value="${p}">${p}</option>`; });
+
+            // Also add districts found in actual member data (in case they don't match the predefined list)
+            addDynamicDistrictOptions(dSelect);
+        }
+
+        function addDynamicDistrictOptions(dSelect) {
+            // Will be called again after Firebase data loads
+            const existingValues = new Set();
+            for (let i = 0; i < dSelect.options.length; i++) {
+                existingValues.add(dSelect.options[i].value);
+            }
+
+            allMembersCache.forEach(m => {
+                [m.workDistrict, m.homeDistrict, m.work_district, m.home_district].forEach(d => {
+                    if (d && !existingValues.has(d)) {
+                        dSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                        existingValues.add(d);
+                    }
+                });
+            });
         }
 
         function loadMembers() {
-            const members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+            const members = allMembersCache;
             const grid = document.getElementById('membersListGrid');
 
             const searchTerm = document.getElementById('memberSearch').value.toLowerCase();
@@ -232,8 +260,12 @@
 
             const filteredMembers = members.filter(m => {
                 const isApproved = m.status === 'Approved';
-                const matchesSearch = !searchTerm || m.name.toLowerCase().includes(searchTerm) || (m.mobile && m.mobile.includes(searchTerm));
-                const matchesDistrict = !districtTerm || m.workDistrict === districtTerm || m.homeDistrict === districtTerm;
+                const nameMatch = m.name && m.name.toLowerCase().includes(searchTerm);
+                const mobileMatch = m.mobile && m.mobile.includes(searchTerm);
+                const matchesSearch = !searchTerm || nameMatch || mobileMatch;
+                const matchesDistrict = !districtTerm ||
+                    m.workDistrict === districtTerm || m.homeDistrict === districtTerm ||
+                    m.work_district === districtTerm || m.home_district === districtTerm;
                 const matchesDept = !deptTerm || m.department === deptTerm;
                 const matchesPost = !postTerm || m.post === postTerm;
 
@@ -249,42 +281,41 @@
                 const card = document.createElement('div');
                 card.className = 'card profile-card';
                 card.style.textAlign = 'center';
+                const photoSrc = m.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(m.name || 'U') + '&background=1a5f7a&color=fff&size=150';
+                const district = m.workDistrict || m.work_district || m.homeDistrict || m.home_district || 'UP';
                 card.innerHTML = `
                     <div style="position: relative;">
-                        <img src="${m.photo || 'https://via.placeholder.com/150'}" class="profile-img" style="width:100px; height:100px; border-radius:50%; margin: 0 auto 10px; object-fit: cover;">
+                        <img src="${photoSrc}" class="profile-img" style="width:100px; height:100px; border-radius:50%; margin: 0 auto 10px; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(m.name || 'U')}&background=1a5f7a&color=fff&size=150'">
                     </div>
-                    <h3>${m.name}</h3>
+                    <h3>${m.name || 'अज्ञात'}</h3>
                     <p style="color: var(--secondary-color); font-weight: 600;">${m.post || 'सदस्य'}</p>
-                    <p><i class="fa-solid fa-location-dot"></i> ${m.workDistrict || 'UP'}</p>
-                    <button onclick="viewProfile(${m.id}, 'member')" class="btn btn-sm" style="margin-top:10px; background: var(--accent-color); color:#fff; border:none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">विवरण देखें</button>
+                    <p><i class="fa-solid fa-location-dot"></i> ${district}</p>
+                    <button onclick="viewProfile('${m.firestoreId}', 'member')" class="btn btn-sm" style="margin-top:10px; background: var(--accent-color); color:#fff; border:none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">विवरण देखें</button>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        window.viewProfile = function (id, type) {
-            const data = type === 'member'
-                ? JSON.parse(localStorage.getItem('up_sangh_members')) || []
-                : JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
-
-            const p = data.find(x => x.id === id);
+        window.viewProfile = function (firestoreId, type) {
+            const p = allMembersCache.find(x => x.firestoreId === firestoreId);
             if (!p) return;
 
             const modal = document.getElementById('profileViewer');
             const content = document.getElementById('profileContent');
+            const photoSrc = p.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.name || 'U') + '&background=1a5f7a&color=fff&size=150';
 
             content.innerHTML = `
                 <div class="profile-grid">
                     <div>
-                        <img src="${p.photo || 'https://via.placeholder.com/150'}" class="profile-img-large">
+                        <img src="${photoSrc}" class="profile-img-large" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || 'U')}&background=1a5f7a&color=fff&size=150'">
                     </div>
                     <div>
-                        <h2 style="margin-bottom:5px; color:#2c3e50;">${p.name}</h2>
-                        <p style="color:#e67e22; font-weight:bold;">${p.post || (type === 'member' ? 'सदस्य' : p.role)}</p>
+                        <h2 style="margin-bottom:5px; color:#2c3e50;">${p.name || 'अज्ञात'}</h2>
+                        <p style="color:#e67e22; font-weight:bold;">${p.post || 'सदस्य'}</p>
                         <table class="details-table">
                             <tr><td>विभाग:</td><td>${p.department || p.vibhag || '--'}</td></tr>
-                            <tr><td>कार्यस्थल जिला:</td><td>${p.workDistrict || p.district || '--'}</td></tr>
-                            <tr><td>गृह जनपद:</td><td>${p.homeDistrict || '--'}</td></tr>
+                            <tr><td>कार्यस्थल जिला:</td><td>${p.workDistrict || p.work_district || p.district || '--'}</td></tr>
+                            <tr><td>गृह जनपद:</td><td>${p.homeDistrict || p.home_district || '--'}</td></tr>
                             <tr><td>मोबाइल:</td><td>${p.mobile || '********'}</td></tr>
                         </table>
                     </div>
@@ -303,11 +334,53 @@
         document.getElementById('deptFilter').addEventListener('change', loadMembers);
         document.getElementById('postFilter').addEventListener('change', loadMembers);
 
+        // Initialize: Load from Firebase
         document.addEventListener('DOMContentLoaded', () => {
             populateFilters();
-            loadMembers();
+
+            // Show loading state
+            const grid = document.getElementById('membersListGrid');
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px 0;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
+                    <p style="margin-top: 10px; color: #666;">सदस्य डेटा लोड हो रहा है... (Loading members from server...)</p>
+                </div>`;
+
+            // Wait for Firebase to be ready, then listen for members
+            function initFirebaseListener() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(initFirebaseListener, 300);
+                    return;
+                }
+
+                window.db.ref("members").on("value", snapshot => {
+                    allMembersCache = [];
+                    snapshot.forEach(child => {
+                        const data = child.val();
+                        data.firestoreId = child.key;
+                        allMembersCache.push(data);
+                    });
+
+                    console.log("Members loaded from Firebase:", allMembersCache.length);
+
+                    // Update district filter with actual data
+                    addDynamicDistrictOptions(document.getElementById('districtFilter'));
+
+                    // Render members
+                    loadMembers();
+                }, error => {
+                    console.error("Firebase members load error:", error);
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px 0;">
+                            <i class="fa-solid fa-exclamation-triangle fa-2x" style="color: #e74c3c;"></i>
+                            <p style="margin-top: 10px; color: #888;">डेटा लोड करने में समस्या हुई। कृपया पेज रिफ्रेश करें।</p>
+                        </div>`;
+                });
+            }
+
+            initFirebaseListener();
         });
     </script>
 </body>
 
-</html>
+</html>
