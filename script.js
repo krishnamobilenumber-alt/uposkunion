@@ -886,33 +886,53 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             // Collect Data
-            const name = document.getElementById('name') ? document.getElementById('name').value : 'Anonymous';
-            const mobile = document.getElementById('mobile') ? document.getElementById('mobile').value : '';
-            const subject = document.getElementById('subject') ? document.getElementById('subject').value : 'General Issue';
-            const message = document.getElementById('message').value;
+            const name = document.getElementById('c_name') ? document.getElementById('c_name').value : 'Anonymous';
+            const dept = document.getElementById('c_dept') ? document.getElementById('c_dept').value : '';
+            const message = document.getElementById('c_issue') ? document.getElementById('c_issue').value : '';
+
+            // Get logged in user's mobile if available
+            let mobile = '';
+            try {
+                const currentMember = localStorage.getItem('up_sangh_current_member');
+                if (currentMember) {
+                    const parsed = JSON.parse(currentMember);
+                    if (parsed && parsed.mobile) mobile = parsed.mobile;
+                }
+            } catch (e) { console.error(e); }
 
             if (message) {
                 const newIssue = {
                     id: Date.now(),
                     name,
-                    mobile,
-                    subject,
+                    mobile: mobile || 'N/A',
+                    subject: dept || 'General Issue',
                     message,
+                    status: 'Pending',
                     date: new Date().toLocaleDateString('hi-IN')
                 };
 
-                // Save to LocalStorage
-                // Use the safe helper if available, else manual try-catch
-                let issues = [];
-                try {
-                    issues = JSON.parse(localStorage.getItem('up_sangh_issues')) || [];
-                } catch (e) { issues = []; }
+                if (window.db) {
+                    window.db.ref("issues").push(newIssue)
+                        .then(() => {
+                            alert('आपकी समस्या दर्ज कर ली गई है। धन्यवाद। (Issue Submitted)');
+                            issueForm.reset();
+                        })
+                        .catch(err => {
+                            alert('त्रुटि: ' + err.message);
+                        });
+                } else {
+                    // Fallback to LocalStorage
+                    let issues = [];
+                    try {
+                        issues = JSON.parse(localStorage.getItem('up_sangh_issues')) || [];
+                    } catch (e) { issues = []; }
 
-                issues.push(newIssue);
-                localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
+                    issues.push(newIssue);
+                    localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
 
-                alert('आपकी समस्या दर्ज कर ली गई है। धन्यवाद। (Issue Submitted)');
-                issueForm.reset();
+                    alert('आपकी समस्या दर्ज कर ली गई है (लोकल)। धन्यवाद। (Issue Submitted)');
+                    issueForm.reset();
+                }
             } else {
                 alert('कृपया विवरण लिखें।');
             }
