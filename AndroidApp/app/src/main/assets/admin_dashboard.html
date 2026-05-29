@@ -1465,6 +1465,7 @@
         window.allMedia = [];
         window.allDocs = [];
         window.allComplaints = [];
+        window.allFinance = [];
 
         // --- FIREBASE INIT & SYNC (ADMIN) ---
         if (!firebase.apps.length) {
@@ -1549,6 +1550,12 @@
             window.db.ref("complaints").on("value", snapshot => {
                 window.allComplaints = snapshotToArray(snapshot);
                 if (window.loadComplaintsData) window.loadComplaintsData();
+            });
+
+            // Finance Sync
+            window.db.ref("finance").on("value", snapshot => {
+                window.allFinance = snapshotToArray(snapshot);
+                if (window.loadFinanceData) window.loadFinanceData();
             });
         }
 
@@ -1849,7 +1856,7 @@
         };
 
         window.loadFinanceData = function () {
-            const financeData = JSON.parse(localStorage.getItem('up_sangh_finance')) || [];
+            const financeData = window.allFinance || [];
             const members = window.allMembers || [];
             const filterLevel = document.getElementById('financeFilterLevel').value;
             const div = document.getElementById('financeFilterDivision').value;
@@ -1900,7 +1907,7 @@
                     const feeIncome = filteredMembers.reduce((sum, m) => sum + (parseFloat(m.membership_amount) || 0), 0);
 
                     // Calculate Approved Donations Income
-                    const requests = JSON.parse(localStorage.getItem('up_sangh_requests')) || [];
+                    const requests = window.allRequests || [];
                     const donationIncome = requests.filter(r =>
                         r.type === 'Donation' &&
                         r.status === 'Approved' &&
@@ -2088,7 +2095,7 @@
 
         window.deleteDocument = async function (id) {
             if (!confirm('मिटाना चाहते हैं?')) return;
-            const docs = JSON.parse(localStorage.getItem('up_sangh_docs')) || [];
+            const docs = window.allDocs || [];
             const d = docs.find(x => x.id === id);
 
             if (d && d.firestoreId) {
@@ -2099,17 +2106,18 @@
                 if (qs.exists()) {
                     window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
                 } else {
-                    let newDocs = docs.filter(x => x.id !== id);
-                    localStorage.setItem('up_sangh_docs', JSON.stringify(newDocs));
-                    loadDocumentsData();
+                    alert("Document not found.");
                 }
             }
         };
 
         window.downloadDocument = function (id) {
-            const docs = JSON.parse(localStorage.getItem('up_sangh_docs')) || [];
+            const docs = window.allDocs || [];
             const doc = docs.find(d => d.id === id);
-            if (!doc) return;
+            if (!doc) {
+                alert("दस्तावेज़ नहीं मिला।");
+                return;
+            }
             const a = document.createElement('a');
             a.href = doc.data;
             a.download = doc.title;
@@ -2334,7 +2342,7 @@
 
         window.deleteMedia = async function (id) {
             if (!confirm('क्या आप इसे हटाना चाहते हैं?')) return;
-            const media = JSON.parse(localStorage.getItem('up_sangh_media')) || [];
+            const media = window.allMedia || [];
             const m = media.find(x => x.id === id);
 
             if (m && m.firestoreId) {
@@ -2345,14 +2353,13 @@
                 if (qs.exists()) {
                     window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
                 } else {
-                    let newMedia = media.filter(x => x.id !== id);
-                    localStorage.setItem('up_sangh_media', JSON.stringify(newMedia));
-                    loadMediaGallery();
+                    alert("Media not found.");
                 }
             }
         };
 
-        window.generateMockMedia = function () {
+        window.generateMockMedia = async function (bypassConfirm = false) {
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
             const mockMedia = [
                 {
                     id: Date.now() + 1,
@@ -2376,11 +2383,19 @@
                     date: new Date().toLocaleDateString('hi-IN')
                 }
             ];
-            const existing = JSON.parse(localStorage.getItem('up_sangh_media')) || [];
-            localStorage.setItem('up_sangh_media', JSON.stringify([...existing, ...mockMedia]));
-            alert("डमी मीडिया जोड़ा गया! (Mock Media Added)");
-            if (document.getElementById('section-media-gallery').classList.contains('active')) {
-                loadMediaGallery();
+            const updates = {};
+            mockMedia.forEach(m => {
+                const newKey = window.db.ref("media").push().key;
+                updates[`media/${newKey}`] = m;
+            });
+
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert("डमी मीडिया जोड़ा गया! (Mock Media Added)");
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
             }
         };
 
@@ -2425,7 +2440,7 @@
         window.resolveComplaint = async function (id) {
             if (!confirm('क्या आप इस शिकायत को हल (Resolved) मार्क करना चाहते हैं?')) return;
 
-            const complaints = JSON.parse(localStorage.getItem('up_sangh_complaints')) || [];
+            const complaints = window.allComplaints || [];
             const c = complaints.find(c => c.id === id);
 
             if (c && c.firestoreId) {
@@ -2436,14 +2451,7 @@
                 if (qs.exists()) {
                     window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).update({ status: 'Resolved' }).then(() => alert("शिकायत हल की गई! (Cloud)"));
                 } else {
-                    // Local
-                    const idx = complaints.findIndex(x => x.id === id);
-                    if (idx !== -1) {
-                        complaints[idx].status = 'Resolved';
-                        localStorage.setItem('up_sangh_complaints', JSON.stringify(complaints));
-                        alert("शिकायत हल की गई! (Local)");
-                        loadComplaintsData();
-                    }
+                    alert("Complaint not found.");
                 }
             }
         };
@@ -2451,7 +2459,7 @@
         window.deleteComplaint = async function (id) {
             if (!confirm('हटाना चाहते हैं?')) return;
 
-            const complaints = JSON.parse(localStorage.getItem('up_sangh_complaints')) || [];
+            const complaints = window.allComplaints || [];
             const c = complaints.find(c => c.id === id);
 
             if (c && c.firestoreId) {
@@ -2462,19 +2470,19 @@
                 if (qs.exists()) {
                     window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
                 } else {
-                    let newComplaints = complaints.filter(x => x.id !== id);
-                    localStorage.setItem('up_sangh_complaints', JSON.stringify(newComplaints));
-                    loadComplaintsData();
+                    alert("Complaint not found.");
                 }
             }
         };
 
-        window.generateMockComplaints = function () {
+        window.generateMockComplaints = async function (bypassConfirm = false) {
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
             const types = ["वेतन न मिलना", "उत्पीड़न / शोषण", "छुट्टी न मिलना", "नौकरी से निकालना", "भ्रष्टाचार"];
             const depts = ["Education", "Health", "Revenue", "Police", "PWD"];
-            const mockData = [];
+            const updates = {};
             for (let i = 0; i < 5; i++) {
-                mockData.push({
+                const newKey = window.db.ref("complaints").push().key;
+                updates[`complaints/${newKey}`] = {
                     id: Date.now() + i,
                     name: "User " + (i + 1),
                     mobile: "987654321" + i,
@@ -2483,12 +2491,16 @@
                     message: "यह एक डमी शिकायत है। " + types[i % types.length] + " के संबंध में समस्या है।",
                     status: Math.random() > 0.5 ? 'Pending' : 'Resolved',
                     date: new Date().toLocaleDateString('hi-IN')
-                });
+                };
             }
-            localStorage.setItem('up_sangh_complaints', JSON.stringify(mockData));
-            alert("डमी शिकायतें जनरेट की गई! (Mock Complaints Generated)");
-            if (document.getElementById('section-complaints').classList.contains('active')) {
-                loadComplaintsData();
+
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert("डमी शिकायतें जनरेट की गई! (Mock Complaints Generated)");
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
             }
         };
 
@@ -3829,21 +3841,34 @@
             }
         };
 
-        window.generateMockFees = function () {
-            let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
+        window.generateMockFees = async function (bypassConfirm = false) {
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
+            let members = window.allMembers || [];
             if (members.length === 0) {
-                alert("कोई सदस्य नहीं मिला। पहले डमी सदस्य बनाएँ।");
+                if (!bypassConfirm) alert("कोई सदस्य नहीं मिला। पहले डमी सदस्य बनाएँ।");
                 return;
             }
+
+            const updates = {};
             members.forEach(m => {
-                m.fee_status = Math.random() > 0.5 ? 'Paid' : 'Pending';
-                m.id_card_status = m.fee_status === 'Paid' && Math.random() > 0.3 ? 'Generated' : 'Not Generated';
-                if (m.fee_status === 'Paid') m.payment_date = new Date().toISOString();
+                if (m.firestoreId) {
+                    const fee_status = Math.random() > 0.5 ? 'Paid' : 'Pending';
+                    const id_card_status = fee_status === 'Paid' && Math.random() > 0.3 ? 'Generated' : 'Not Generated';
+                    const payment_date = fee_status === 'Paid' ? new Date().toISOString() : null;
+
+                    updates[`members/${m.firestoreId}/fee_status`] = fee_status;
+                    updates[`members/${m.firestoreId}/id_card_status`] = id_card_status;
+                    updates[`members/${m.firestoreId}/payment_date`] = payment_date;
+                }
             });
-            localStorage.setItem('up_sangh_members', JSON.stringify(members));
-            alert("डमी शुल्क डेटा जनरेट किया गया! (Mock Fees Generated)");
-            if (document.getElementById('section-id-cards-fees').classList.contains('active')) {
-                loadIDCardsFeesData();
+
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert("डमी शुल्क डेटा जनरेट किया गया! (Mock Fees Generated)");
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
             }
         };
 
@@ -4112,24 +4137,26 @@
         };
 
         // --- Mock Data Generation Tools ---
-        window.generateMockMembers = function (count) {
-            if (!confirm(`क्या आप ${count} डमी सदस्य जोड़ना चाहते हैं?`)) return;
+        window.generateMockMembers = async function (count, bypassConfirm = false) {
+            if (!bypassConfirm && !confirm(`क्या आप ${count} डमी सदस्य जोड़ना चाहते हैं?`)) return;
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
 
             const names = ["अमित कुमार", "राजेश सिंह", "सुनील वर्मा", "नेहा शर्मा", "विकास यादव", "संदीप मोर्या", "दीपक गुप्ता", "राहुल तिवारी", "मनोज कुशवाहा", "प्रियंका भारती"];
             const districts = ["लखनऊ", "कानपुर", "वाराणसी", "प्रयागराज", "मेरठ", "गोरखपुर", "झाँसी", "बरेली", "अलीगढ़", "मथुरा"];
             const depts = ["स्वास्थ्य", "शिक्षा", "राजस्व", "पुलिस", "पशुपालन", "नगर निगम", "लोक निर्माण", "कृषि"];
             const posts = ["कनिष्ठ सहायक", "कंप्यूटर ऑपरेटर", "ड्राइवर", "सहायक", "प्यून", "मैनेजर"];
 
-            let members = JSON.parse(localStorage.getItem('up_sangh_members')) || [];
             const timestamp = Date.now();
+            const updates = {};
 
             for (let i = 1; i <= count; i++) {
                 const randomName = names[Math.floor(Math.random() * names.length)];
                 const randomDist = districts[Math.floor(Math.random() * districts.length)];
                 const randomDept = depts[Math.floor(Math.random() * depts.length)];
                 const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                const newKey = window.db.ref("members").push().key;
 
-                members.push({
+                updates[`members/${newKey}`] = {
                     id: timestamp + i,
                     name: `${randomName} (${i})`,
                     fatherName: "श्री जनक राम",
@@ -4144,19 +4171,25 @@
                     photo: "",
                     status: 'Approved',
                     date: new Date().toLocaleDateString('hi-IN')
-                });
+                };
             }
 
-            localStorage.setItem('up_sangh_members', JSON.stringify(members));
-            alert(`${count} सदस्य सफलतापूर्वक जोड़े गए!`);
-            loadDashboardData();
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert(`${count} सदस्य सफलतापूर्वक जोड़े गए!`);
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
+            }
         };
 
-        window.generateMockDistrictAdmins = function () {
-            if (!confirm('क्या आप प्रत्येक जिले के लिए एक डमी "जिला एडमिन" जोड़ना चाहते हैं?')) return;
+        window.generateMockDistrictAdmins = async function (bypassConfirm = false) {
+            if (!bypassConfirm && !confirm('क्या आप प्रत्येक जिले के लिए एक डमी "जिला एडमिन" जोड़ना चाहते हैं?')) return;
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
 
-            let officers = JSON.parse(localStorage.getItem('up_sangh_officers')) || [];
             const timestamp = Date.now();
+            const updates = {};
             let count = 0;
 
             const allDists = [];
@@ -4165,11 +4198,12 @@
             }
 
             allDists.forEach((dist, index) => {
-                officers.push({
+                const newKey = window.db.ref("officers").push().key;
+                updates[`officers/${newKey}`] = {
                     id: timestamp + index,
                     name: `${dist} Admin`,
                     fatherName: "श्री एडमिन पिता",
-                    mobile: `8${(100 + index).toString().padStart(9, '0')}`, // Unique 10-digit starting with 8
+                    mobile: `8${(100 + index).toString().padStart(9, '0')}`,
                     password: "123",
                     role: 'District Admin',
                     district: dist,
@@ -4182,40 +4216,49 @@
                     sign: "",
                     status: 'Approved',
                     date: new Date().toLocaleDateString('hi-IN')
-                });
+                };
                 count++;
             });
 
-            localStorage.setItem('up_sangh_officers', JSON.stringify(officers));
-            alert(`${count} जिला एडमिन सफलतापूर्वक जोड़े गए! पासवर्ड '123' है।`);
-            loadDashboardData();
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert(`${count} जिला एडमिन सफलतापूर्वक जोड़े गए! पासवर्ड '123' है।`);
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
+            }
         };
 
         window.clearAllMembers = function () {
             if (confirm('क्या आप सुनिश्चित हैं कि आप सभी सदस्यों को हटाना चाहते हैं? यह प्रक्रिया वापस नहीं ली जा सकती।')) {
-                localStorage.removeItem('up_sangh_members');
-                alert('सभी सदस्य हटा दिए गए।');
-                loadDashboardData();
+                if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
+                window.db.ref('members').set(null).then(() => {
+                    alert('सभी सदस्य हटा दिए गए।');
+                }).catch(err => alert("त्रुटि: " + err.message));
             }
         };
 
         window.clearAllOfficers = function () {
             if (confirm('क्या आप सभी पदाधिकारियों को हटाना चाहते हैं? आपको फिर से लॉगिन करना पड़ सकता है यदि आपका अकाउंट इसमें शामिल है।')) {
-                localStorage.removeItem('up_sangh_officers');
-                alert('सभी पदाधिकारी हटा दिए गए।');
-                loadDashboardData();
+                if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
+                window.db.ref('officers').set(null).then(() => {
+                    alert('सभी पदाधिकारी हटा दिए गए।');
+                }).catch(err => alert("त्रुटि: " + err.message));
             }
         };
 
-        window.generateMockIssues = function () {
+        window.generateMockIssues = async function (bypassConfirm = false) {
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
             const types = ["पेमेंट समस्या (Payment Issue)", "रजिस्ट्रेशन त्रुटि (Reg Error)", "आईडी कार्ड नहीं मिला (ID Card Pending)", "लॉगिन समस्या (Login Issue)"];
             const names = ["रामसेवक", "हरिप्रसाद", "ओमप्रकाश", "शिव कुमार", "मुन्नी देवी"];
             const subjects = ["वेतन नहीं मिला", "डेटा गलत है", "कार्ड कब आएगा?", "लॉगिन नहीं हो रहा"];
-            const issues = [];
             const timestamp = Date.now();
+            const updates = {};
 
             for (let i = 1; i <= 20; i++) {
-                issues.push({
+                const newKey = window.db.ref("issues").push().key;
+                updates[`issues/${newKey}`] = {
                     id: timestamp + i,
                     name: names[Math.floor(Math.random() * names.length)],
                     mobile: `7${Math.floor(Math.random() * 900000000 + 100000000)}`,
@@ -4224,42 +4267,93 @@
                     message: `यह एक डमी शिकायत संख्या ${i} है जो टेस्टिंग के लिए बनाई गई है।`,
                     status: Math.random() > 0.5 ? 'Solved' : 'Pending',
                     date: new Date().toLocaleDateString('hi-IN')
-                });
+                };
             }
-            localStorage.setItem('up_sangh_issues', JSON.stringify(issues));
-            alert('20 डमी समस्याएं जनरेट की गईं!');
-            loadDashboardData();
+
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert('20 डमी समस्याएं जनरेट की गईं!');
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
+            }
         };
 
-        window.generateCompleteMockDataset = function () {
+        window.generateCompleteMockDataset = async function () {
             if (!confirm('क्या आप सभी सेक्शन के लिए पूरा डमी डेटा जनरेट करना चाहते हैं?')) return;
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
 
-            // 1. Members
-            generateMockMembers(100);
-            // 2. Officers
-            generateMockDistrictAdmins();
-            // 3. Reports
-            generateMockReports();
-            // 4. Issues
-            generateMockIssues();
-            // 5. Finance
-            generateMockFinanceData();
+            try {
+                const btn = document.querySelector('button[onclick="generateCompleteMockDataset()"]');
+                const origText = btn ? btn.innerHTML : '';
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> जनरेट हो रहा है...';
+                }
 
-            alert('पूरा डमी डेटासेट सफलतापूर्वक जनरेट किया गया!');
-            loadDashboardData();
+                // 1. Members (100)
+                await generateMockMembers(100, true);
+                // 2. Officers
+                await generateMockDistrictAdmins(true);
+                // 3. Issues
+                await generateMockIssues(true);
+                // 4. Finance
+                await generateMockFinanceData(true);
+                // 5. Complaints
+                await generateMockComplaints(true);
+                // 6. Media
+                await generateMockMedia(true);
+                // 7. Docs
+                await generateMockDocs(true);
+
+                // Run member fees generator after members are in memory
+                const snap = await window.db.ref('members').once('value');
+                if (snap.exists()) {
+                    const membersObj = snap.val();
+                    const feeUpdates = {};
+                    Object.keys(membersObj).forEach(key => {
+                        const m = membersObj[key];
+                        const fee_status = Math.random() > 0.5 ? 'Paid' : 'Pending';
+                        const id_card_status = fee_status === 'Paid' && Math.random() > 0.3 ? 'Generated' : 'Not Generated';
+                        const payment_date = fee_status === 'Paid' ? new Date().toISOString() : null;
+
+                        feeUpdates[`members/${key}/fee_status`] = fee_status;
+                        feeUpdates[`members/${key}/id_card_status`] = id_card_status;
+                        feeUpdates[`members/${key}/payment_date`] = payment_date;
+                    });
+                    await window.db.ref().update(feeUpdates);
+                }
+
+                alert('पूरा डमी डेटासेट सफलतापूर्वक जनरेट किया गया!');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("डमी डेटा जनरेट करने में त्रुटि: " + err.message);
+                const btn = document.querySelector('button[onclick="generateCompleteMockDataset()"]');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-database"></i> पूरा डमी डेटा (Complete Dataset)';
+                }
+            }
         };
 
         window.clearAllData = function () {
             if (!confirm('क्या आप पूरे डेटाबेस (सदस्य, पदाधिकारी, रिपोर्ट, समस्याएं, फाइनेंस) को साफ़ करना चाहते हैं?')) return;
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
 
-            localStorage.removeItem('up_sangh_members');
-            localStorage.removeItem('up_sangh_officers');
-            localStorage.removeItem('up_sangh_reports');
-            localStorage.removeItem('up_sangh_issues');
-            localStorage.removeItem('up_sangh_finance');
+            const pathsToClear = ['members', 'officers', 'issues', 'finance', 'complaints', 'documents', 'media', 'requests', 'notices'];
+            const updates = {};
+            pathsToClear.forEach(p => {
+                updates[p] = null;
+            });
 
-            alert('सारा डेटा क्लियर कर दिया गया है।');
-            loadDashboardData();
+            window.db.ref().update(updates).then(() => {
+                alert('सारा डेटा क्लियर कर दिया गया है।');
+            }).catch(err => alert("त्रुटि: " + err.message));
         };
 
         // --- NEW: FINANCIAL REPORTS LOGIC --- //
@@ -4278,47 +4372,33 @@
             }
         };
 
-        window.generateMockFinanceData = function () {
+        window.generateMockFinanceData = async function (bypassConfirm = false) {
+            if (!window.db) { alert("डाटाबेस लोड नहीं हुआ है।"); return; }
             const months = ['January 2024', 'February 2024', 'March 2024', 'April 2024'];
-            const finance = [];
-            months.forEach(m => {
+            const updates = {};
+            months.forEach((m, idx) => {
                 const income = Math.floor(Math.random() * 50000) + 10000;
                 const expense = Math.floor(Math.random() * 30000) + 5000;
-                finance.push({
+                const newKey = window.db.ref("finance").push().key;
+                updates[`finance/${newKey}`] = {
+                    id: Date.now() + idx,
                     month: m,
                     income: income,
                     expense: expense,
                     balance: income - expense,
                     cash: (income - expense) * 0.8,
                     remarks: "Monthly Collection & Regular Expenses"
-                });
+                };
             });
-            localStorage.setItem('up_sangh_finance', JSON.stringify(finance));
-            if (document.getElementById('tab-finance') && document.getElementById('tab-finance').classList.contains('active')) {
-                loadFinanceData();
+
+            try {
+                await window.db.ref().update(updates);
+                if (!bypassConfirm) alert("डमी फाइनेंस डेटा जनरेट किया गया!");
+            } catch (err) {
+                console.error(err);
+                if (!bypassConfirm) alert("त्रुटि: " + err.message);
+                throw err;
             }
-        };
-
-        window.loadFinanceData = function () {
-            const data = JSON.parse(localStorage.getItem('up_sangh_finance')) || [];
-            const tbody = document.querySelector('#financeTable tbody');
-            if (!tbody) return;
-
-            let html = '';
-            data.forEach(f => {
-                html += `
-                    <tr>
-                        <td>${f.month}</td>
-                        <td style="color:green; font-weight:bold;">₹${f.income.toLocaleString()}</td>
-                        <td style="color:red;">₹${f.expense.toLocaleString()}</td>
-                        <td style="color:blue; font-weight:bold;">₹${f.balance.toLocaleString()}</td>
-                        <td>₹${f.cash.toLocaleString()}</td>
-                        <td><small>${f.remarks}</small></td>
-                        <td><button class="btn btn-sm btn-primary" onclick="viewInvoice('${f.month}')"><i class="fa-solid fa-file-invoice"></i> View</button></td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center;">No financial data found.</td></tr>';
         };
 
         window.viewMonthlyReportInvoice = function (reportId) {
@@ -4561,11 +4641,11 @@
             });
         };
         window.loadNoticesData = function () {
-            const notices = JSON.parse(localStorage.getItem('up_sangh_notices')) || [];
+            const notices = window.allNotices || [];
             const tbody = document.getElementById('noticesBody');
             if (!tbody) return;
 
-            tbody.innerHTML = notices.reverse().map(n => `
+            tbody.innerHTML = [...notices].reverse().map(n => `
                 <tr>
                     <td>${n.date}</td>
                     <td><strong>${n.title}</strong></td>
@@ -4606,10 +4686,7 @@
             if (qs.exists()) {
                 window.db.ref(qs.ref.path + '/' + Object.keys(qs.val())[0]).remove().then(() => alert("Deleted (Cloud)"));
             } else {
-                let notices = JSON.parse(localStorage.getItem('up_sangh_notices')) || [];
-                notices = notices.filter(n => n.id !== id);
-                localStorage.setItem('up_sangh_notices', JSON.stringify(notices));
-                loadNoticesData();
+                alert("Notice not found.");
             }
         };
 
